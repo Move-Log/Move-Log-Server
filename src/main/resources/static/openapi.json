@@ -1140,7 +1140,7 @@
       "NewsHeadLineReq": {
         "type": "object",
         "properties": {
-          "Option": {
+          "option": {
             "type": "string",
             "description": "뉴스 헤드라인 고정 옵션"
           },
