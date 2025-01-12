@@ -672,7 +672,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Message"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewsHeadLineRes"
+                  }
                 }
               }
             }
@@ -1151,6 +1154,15 @@
             "noun": {
                 "type": "string",
                 "description": "명사"
+          }
+        }
+      },
+      "NewsHeadLineRes": {
+        "type": "object",
+        "properties": {
+          "headline": {
+            "type": "string",
+            "description": "뉴스 헤드라인"
           }
         }
       },
