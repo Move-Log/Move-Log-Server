@@ -48,23 +48,37 @@ public class S3Util {
                 .build();
     }
 
-    public String upload(MultipartFile file) {
+
+    public String uploadToRecordFolder(MultipartFile file) {
+        return uploadToFolder(file, "record");
+    }
+
+    public String uploadToNewsFolder(MultipartFile file) {
+        return uploadToFolder(file, "news");
+    }
+
+    private String uploadToFolder(MultipartFile file, String folder) {
+        if (!folder.endsWith("/")) {
+            folder += "/";
+        }
+        return upload(file, folder + createFileName(file.getOriginalFilename()));
+    }
+
+    private String upload(MultipartFile file, String filePath) {
         String imageUrl = "";
-        String fileName = createFileName(file.getOriginalFilename());
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getSize());
         objectMetadata.setContentType(file.getContentType());
 
         try (InputStream inputStream = file.getInputStream()) {
-            s3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+            s3Client.putObject(new PutObjectRequest(bucket, filePath, inputStream, objectMetadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
-            imageUrl = s3Client.getUrl(bucket, fileName).toString();
+            imageUrl = s3Client.getUrl(bucket, filePath).toString();
         } catch (IOException e) {
             throw new IllegalArgumentException("IMAGE_UPLOAD_ERROR");
         }
         return imageUrl;
     }
-
     // 이미지파일명 중복 방지
     private String createFileName(String fileName) {
         return UUID.randomUUID().toString().concat(getFileExtension(fileName));

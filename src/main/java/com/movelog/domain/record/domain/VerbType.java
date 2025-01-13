@@ -22,4 +22,9 @@ public enum VerbType {
         }
         throw new IllegalArgumentException("No enum constant for value: " + value);
     }
+
+    public static String getStringVerbType(VerbType verbType) {
+        return verbType.getVerbType();
+    }
+
 }

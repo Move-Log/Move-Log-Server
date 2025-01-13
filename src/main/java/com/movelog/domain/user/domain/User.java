@@ -3,6 +3,7 @@ package com.movelog.domain.user.domain;
 
 import com.movelog.domain.common.BaseEntity;
 
+import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -40,7 +41,7 @@ public class User extends BaseEntity {
     private String fcmToken;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Record> records = new ArrayList<>();
+    private List<Keyword> keywords = new ArrayList<>();
 
 
     @Builder

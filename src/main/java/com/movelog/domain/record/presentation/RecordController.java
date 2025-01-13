@@ -39,7 +39,7 @@ public class RecordController {
 
         ApiResponse result = ApiResponse.builder()
                 .check(true)
-                .information(recordService.retrieveTodayRecord(userPrincipal.getId()))
+                .information(recordService.retrieveTodayRecord(5L))
                 .build();
         return ResponseEntity.ok(result);
     }
