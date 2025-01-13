@@ -1,7 +1,6 @@
 package com.movelog.domain.record.presentation;
 
-import com.movelog.domain.record.dto.req.CreateRecordReq;
-import com.movelog.domain.record.repository.RecordRepository;
+import com.movelog.domain.record.dto.request.CreateRecordReq;
 import com.movelog.domain.record.service.RecordService;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.ApiResponse;

@@ -61,7 +61,7 @@ public class AuthController {
         authService.findOrCreateUser(idTokenReq.provider(), idTokenReq.idToken());
         String email = authService.findEmail(providerId);
 
-        String accessToken = jwtUtil.createJwt("access", providerId, "ROLE_USER", 3600000L, email);
+        String accessToken = jwtUtil.createJwt("access", providerId, "ROLE_USER", 2592000000L, email);
         System.out.println("accessToken = " + accessToken);
         User user = userRepository.findByProviderId(providerId)
                 .orElseThrow(EntityNotFoundException::new);
