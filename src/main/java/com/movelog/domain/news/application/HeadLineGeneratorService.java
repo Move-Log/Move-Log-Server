@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class HeadlineGeneratorService {
+public class HeadLineGeneratorService {
 
     private final GptService gptService;
 
