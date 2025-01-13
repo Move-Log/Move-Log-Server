@@ -28,9 +28,6 @@ public class Record extends BaseEntity {
     @JoinColumn(name = "keyword_id")
     private Keyword keyword;
 
-    @Enumerated(EnumType.STRING) // Enum을 문자열로 저장
-    private VerbType verbType;
-
     @Column(name = "record_image")
     private String recordImage;
 
@@ -38,10 +35,9 @@ public class Record extends BaseEntity {
     private java.time.LocalDateTime actionTime;
 
     @Builder
-    public Record(User user, Keyword keyword, VerbType verbType, String recordImage) {
+    public Record(User user, Keyword keyword, String recordImage) {
         this.user = user;
         this.keyword = keyword;
-        this.verbType = verbType;
         this.recordImage = recordImage;
         this.actionTime = actionTime == null? LocalDateTime.now():actionTime;
     }

@@ -2,6 +2,7 @@ package com.movelog.domain.record.presentation;
 
 import com.movelog.domain.record.dto.request.CreateRecordReq;
 import com.movelog.domain.record.service.RecordService;
+import com.movelog.global.config.security.token.CurrentUser;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +40,7 @@ public class RecordController {
 
         ApiResponse result = ApiResponse.builder()
                 .check(true)
-                .information(recordService.retrieveTodayRecord(userPrincipal.getId()))
+                .information(recordService.retrieveTodayRecord(5L))
                 .build();
         return ResponseEntity.ok(result);
     }

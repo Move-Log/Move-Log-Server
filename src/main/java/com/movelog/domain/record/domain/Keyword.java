@@ -22,11 +22,16 @@ public class Keyword extends BaseEntity {
 
     private String keyword;
 
+    @Enumerated(EnumType.STRING) // Enum을 문자열로 저장
+    @Column(name = "verb_type")
+    private VerbType verbType;
+
     @OneToMany(mappedBy = "keyword")
     private List<Record> records = new ArrayList<>();
 
     @Builder
-    public Keyword(String keyword) {
+    public Keyword(String keyword, VerbType verbType) {
         this.keyword = keyword;
+        this.verbType = verbType;
     }
 }
