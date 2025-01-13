@@ -21,10 +21,6 @@ public class Record extends BaseEntity {
     private Long recordId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "keyword_id")
     private Keyword keyword;
 
@@ -35,8 +31,7 @@ public class Record extends BaseEntity {
     private java.time.LocalDateTime actionTime;
 
     @Builder
-    public Record(User user, Keyword keyword, String recordImage) {
-        this.user = user;
+    public Record(Keyword keyword, String recordImage) {
         this.keyword = keyword;
         this.recordImage = recordImage;
         this.actionTime = actionTime == null? LocalDateTime.now():actionTime;

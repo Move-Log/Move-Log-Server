@@ -35,7 +35,7 @@ public class RecordService {
     public void createRecord(Long userId, CreateRecordReq createRecordReq, MultipartFile img) {
         User user = validUserById(userId);
         // User user = validUserById(5L);
-        String recordImgUrl = s3Util.upload(img);
+        String recordImgUrl = s3Util.uploadToRecordFolder(img);
         log.info("recordImgUrl: {}", recordImgUrl);
 
         String verb = createRecordReq.getVerbType();
@@ -43,6 +43,7 @@ public class RecordService {
             VerbType verbType = VerbType.fromValue(verb);
 
             Keyword keyword = Keyword.builder()
+                    .user(user)
                     .keyword(createRecordReq.getNoun())
                     .verbType(verbType)
                     .build();
@@ -50,7 +51,6 @@ public class RecordService {
             keywordRepository.save(keyword);
 
             Record record = Record.builder()
-                    .user(user)
                     .keyword(keyword)
                     .recordImage(recordImgUrl)
 //                .actionTime(LocalDateTime.now())
@@ -69,6 +69,7 @@ public class RecordService {
     }
 
     public Map<String, Boolean> retrieveTodayRecord(Long userId) {
+        // 유저 유효성 검사 및 조회
         User user = validUserById(userId);
 
         // 오늘의 시작 시간과 끝 시간 계산
@@ -76,8 +77,11 @@ public class RecordService {
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
 
-        // 오늘 기록된 레코드 가져오기
-        List<Record> records = recordRepository.findByUserAndActionTimeBetween(user, startOfDay, endOfDay);
+        // 유저가 소유한 키워드 가져오기
+        List<Keyword> keywords = keywordRepository.findByUser(user);
+
+        // 키워드에 연결된 기록 중 오늘 생성된 기록 가져오기
+        List<Record> records = recordRepository.findByKeywordInAndActionTimeBetween(keywords, startOfDay, endOfDay);
 
         log.info("Retrieved Records: {}", records);
 
@@ -96,6 +100,7 @@ public class RecordService {
                         todayVerbTypes::contains       // 값: 오늘 VerbType에 포함 여부
                 ));
     }
+
 
 
 }
