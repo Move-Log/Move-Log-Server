@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/record")
+@RequestMapping("api/v1/record")
 @RequiredArgsConstructor
 public class RecordController {
     private final RecordService recordService;
