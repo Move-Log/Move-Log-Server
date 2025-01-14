@@ -73,7 +73,7 @@ public class NewsController {
     }
 
 
-    @Operation(summary = "뉴스 추천 기록 조회 API", description = "뉴스 생성 시 최근 생성된 5개의 동사-명사 쌍 목록을 조회합니다. ")
+    @Operation(summary = "뉴스 추천 키워드 조회 API", description = "뉴스 생성 시 최근 생성된 5개의 동사-명사 쌍 목록을 조회합니다. ")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "뉴스 추천 기록 조회 성공",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
@@ -87,6 +87,8 @@ public class NewsController {
         List<RecentKeywordsRes> response = newsService.getRecentKeywords(userPrincipal);
         return ResponseEntity.ok(ApiResponseUtil.success(response));
     }
+
+
 
 
 
