@@ -11,5 +11,8 @@ import java.util.List;
 
 @Repository
 public interface RecordRepository extends JpaRepository<Record,Long> {
+
     List<Record> findByKeywordInAndActionTimeBetween(List<Keyword> keywords, LocalDateTime startTime, LocalDateTime endTime);
+
+    List<Record> findTop5ByKeywordOrderByActionTimeDesc(Keyword keyword);
 }
