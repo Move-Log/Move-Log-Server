@@ -5,6 +5,7 @@ import com.movelog.domain.news.domain.repository.NewsRepository;
 import com.movelog.domain.news.dto.request.CreateNewsReq;
 import com.movelog.domain.news.dto.request.NewsHeadLineReq;
 import com.movelog.domain.news.dto.response.HeadLineRes;
+import com.movelog.domain.news.dto.response.RecentKeywordsRes;
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.exception.KeywordNotFoundException;
@@ -29,6 +30,7 @@ import java.util.Optional;
 public class NewsService {
     private final HeadLineGeneratorService headLineGeneratorService;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final KeywordRepository keywordRepository;
     private final NewsRepository newsRepository;
     private final S3Util s3Util;
@@ -64,6 +66,20 @@ public class NewsService {
 
     }
 
+    public List<RecentKeywordsRes> getRecentKeywords(UserPrincipal userPrincipal) {
+        User user = validateUser(userPrincipal);
+        // id가 5인 유저 정보(테스트용)
+        // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
+        List<Keyword> recentKeywords = keywordRepository.findTop5ByUserOrderByCreatedAtDesc(user);
+
+        return recentKeywords.stream()
+                .map(keyword -> RecentKeywordsRes.builder()
+                        .keywordId(keyword.getKeywordId())
+                        .verb(VerbType.getStringVerbType(keyword.getVerbType()))
+                        .noun(keyword.getKeyword())
+                        .build())
+                .toList();
+    }
 
 
     // User 정보 검증
@@ -79,6 +95,5 @@ public class NewsService {
         if (keywordOptional.isEmpty()) { throw new KeywordNotFoundException(); }
         return keywordOptional.get();
     }
-
 
 }
