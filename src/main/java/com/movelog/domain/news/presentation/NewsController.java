@@ -39,7 +39,8 @@ public class NewsController {
     @Operation(summary = "뉴스 헤드라인 생성 API", description = "뉴스 헤드라인을 생성하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "뉴스 헤드라인 생성 성공",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = HeadLineRes.class))),
             @ApiResponse(responseCode = "400", description = "뉴스 헤드라인 생성 실패",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
@@ -76,7 +77,8 @@ public class NewsController {
     @Operation(summary = "뉴스 추천 키워드 조회 API", description = "뉴스 생성 시 최근 생성된 5개의 동사-명사 쌍 목록을 조회합니다. ")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "뉴스 추천 기록 조회 성공",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = RecentKeywordsRes.class))),
             @ApiResponse(responseCode = "400", description = "뉴스 추천 기록 조회 실패",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
@@ -87,6 +89,7 @@ public class NewsController {
         List<RecentKeywordsRes> response = newsService.getRecentKeywords(userPrincipal);
         return ResponseEntity.ok(ApiResponseUtil.success(response));
     }
+
 
 
 
