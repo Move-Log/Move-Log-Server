@@ -32,10 +32,10 @@ public class Keyword extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "keyword")
+    @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Record> records = new ArrayList<>();
 
-    @OneToMany(mappedBy = "keyword")
+    @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<News> news = new ArrayList<>();
 
     @Builder
