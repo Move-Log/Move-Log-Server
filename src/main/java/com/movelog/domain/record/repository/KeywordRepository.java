@@ -11,4 +11,6 @@ import java.util.List;
 @Repository
 public interface KeywordRepository extends JpaRepository<Keyword,Long> {
     List<Keyword> findByUser(User user);
+
+    List<Keyword> findTop5ByUserOrderByCreatedAtDesc(User user);
 }
