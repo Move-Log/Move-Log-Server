@@ -13,16 +13,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.ErrorResponse;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -64,6 +62,24 @@ public class RecordController {
         TodayRecordStatus result = recordService.retrieveTodayRecord(5L);
         return ResponseEntity.ok(ApiResponseUtil.success(result));
     }
+
+    @Operation(summary = "최근 기록 이미지 조회 API", description = "사용자가 선택한 명사-동사 쌍에 해당하는 최근 기록 이미지(5개)를 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "최근 기록 이미지 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = RecentRecordImagesRes.class))),
+            @ApiResponse(responseCode = "400", description = "최근 기록 이미지 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/image/{keywordId}")
+    public ResponseEntity<?> retrieveRecentRecordImages(
+            @Parameter(description = "User의 토큰을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "키워드 ID(동사-명사 쌍에 대한 ID)를 입력해주세요.", required = true) @PathVariable Long keywordId
+    ) {
+        List<RecentRecordImagesRes> result = recordService.retrieveRecentRecordImages(userPrincipal, keywordId);
+        return ResponseEntity.ok(ApiResponseUtil.success(result));
+    }
+
 
 
 }
