@@ -4,6 +4,7 @@ import com.movelog.domain.news.application.NewsService;
 import com.movelog.domain.news.dto.request.CreateNewsReq;
 import com.movelog.domain.news.dto.request.NewsHeadLineReq;
 import com.movelog.domain.news.dto.response.HeadLineRes;
+import com.movelog.domain.news.dto.response.RecentKeywordsRes;
 import com.movelog.global.config.security.token.CurrentUser;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.Message;
@@ -38,7 +39,8 @@ public class NewsController {
     @Operation(summary = "뉴스 헤드라인 생성 API", description = "뉴스 헤드라인을 생성하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "뉴스 헤드라인 생성 성공",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = HeadLineRes.class))),
             @ApiResponse(responseCode = "400", description = "뉴스 헤드라인 생성 실패",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
@@ -70,6 +72,24 @@ public class NewsController {
         newsService.createNews(userPrincipal, keywordId, createNewsReq, img);
         return ResponseEntity.ok(ApiResponseUtil.success(Message.builder().message("뉴스가 생성되었습니다.").build()));
     }
+
+
+    @Operation(summary = "뉴스 추천 키워드 조회 API", description = "뉴스 생성 시 최근 생성된 5개의 동사-명사 쌍 목록을 조회합니다. ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "뉴스 추천 기록 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = RecentKeywordsRes.class))),
+            @ApiResponse(responseCode = "400", description = "뉴스 추천 기록 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/recommend")
+    public ResponseEntity<?> getRecentKeywords(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        List<RecentKeywordsRes> response = newsService.getRecentKeywords(userPrincipal);
+        return ResponseEntity.ok(ApiResponseUtil.success(response));
+    }
+
 
 
 
