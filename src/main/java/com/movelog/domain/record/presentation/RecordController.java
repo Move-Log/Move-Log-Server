@@ -45,7 +45,7 @@ public class RecordController {
             @Parameter(description = "Schemas의 CreateRecordReq를 참고해주세요.", required = true) @RequestPart CreateRecordReq createRecordReq,
             @RequestPart(value = "img", required = false) MultipartFile img
     ) {
-        recordService.createRecord(5L, createRecordReq, img);
+        recordService.createRecord(userPrincipal.getId(), createRecordReq, img);
         return ResponseEntity.ok(ApiResponseUtil.success(Message.builder().message("기록이 생성되었습니다.").build()));
     }
 
