@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.Collator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -139,18 +140,25 @@ public class RecordService {
         // User user = validUserById(5L);
         String keyword = searchKeywordReq.getSearchKeyword();
         List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
-
-        log.info("Search Keyword: {}", searchKeywordReq.getSearchKeyword());
         keywords.forEach(k -> log.info("Keyword in DB: {}", k.getKeyword()));
 
+        // Collator 생성
+        Collator collator = Collator.getInstance(Locale.KOREA);
 
-        return keywords.stream()
+        // Collator를 이용한 오름차순 정렬
+        List<SearchKeywordRes> sortedResults = keywords.stream()
                 .map(k -> SearchKeywordRes.builder()
                         .keywordId(k.getKeywordId())
                         .noun(k.getKeyword())
                         .verb(VerbType.getStringVerbType(k.getVerbType()))
                         .build())
+                .sorted((o1, o2) -> collator.compare(o1.getNoun(), o2.getNoun())) // Collator로 비교
                 .collect(Collectors.toList());
+
+        // 정렬된 명사 목록 출력
+        sortedResults.forEach(r -> log.info("Sorted Noun: {}", r.getNoun()));
+
+        return sortedResults;
     }
 
     private User validUserById(Long userId) {
