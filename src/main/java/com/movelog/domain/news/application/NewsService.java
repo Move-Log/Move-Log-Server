@@ -96,6 +96,9 @@ public class NewsService {
         LocalDateTime createdAt = LocalDateTime.now().minusDays(7);
         List<News> recentNews = newsRepository.findRecentNewsByUser(user, createdAt, pageable);
 
+        // 최신순 정렬
+        recentNews.sort((n1, n2) -> n2.getCreatedAt().compareTo(n1.getCreatedAt()));
+
         return recentNews.stream()
                 .map(news -> RecentNewsRes.builder()
                         .newsId(news.getNewsId())
