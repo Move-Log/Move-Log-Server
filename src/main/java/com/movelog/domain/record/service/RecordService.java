@@ -4,7 +4,9 @@ import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.dto.request.CreateRecordReq;
+import com.movelog.domain.record.dto.request.SearchKeywordReq;
 import com.movelog.domain.record.dto.response.RecentRecordImagesRes;
+import com.movelog.domain.record.dto.response.SearchKeywordRes;
 import com.movelog.domain.record.dto.response.TodayRecordStatus;
 import com.movelog.domain.record.repository.KeywordRepository;
 import com.movelog.domain.record.repository.RecordRepository;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.Collator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -131,6 +134,33 @@ public class RecordService {
 
     }
 
+
+    public List<SearchKeywordRes> searchKeyword(UserPrincipal userPrincipal, SearchKeywordReq searchKeywordReq) {
+        User user = validUserById(userPrincipal.getId());
+        // User user = validUserById(5L);
+        String keyword = searchKeywordReq.getSearchKeyword();
+        List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
+        keywords.forEach(k -> log.info("Keyword in DB: {}", k.getKeyword()));
+
+        // Collator 생성
+        Collator collator = Collator.getInstance(Locale.KOREA);
+
+        // Collator를 이용한 오름차순 정렬
+        List<SearchKeywordRes> sortedResults = keywords.stream()
+                .map(k -> SearchKeywordRes.builder()
+                        .keywordId(k.getKeywordId())
+                        .noun(k.getKeyword())
+                        .verb(VerbType.getStringVerbType(k.getVerbType()))
+                        .build())
+                .sorted((o1, o2) -> collator.compare(o1.getNoun(), o2.getNoun())) // Collator로 비교
+                .collect(Collectors.toList());
+
+        // 정렬된 명사 목록 출력
+        sortedResults.forEach(r -> log.info("Sorted Noun: {}", r.getNoun()));
+
+        return sortedResults;
+    }
+
     private User validUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         return userOptional.get();
@@ -153,5 +183,4 @@ public class RecordService {
             throw new IllegalArgumentException("noun is required.");
         }
     }
-
 }
