@@ -1,7 +1,9 @@
 package com.movelog.domain.record.presentation;
 
 import com.movelog.domain.record.dto.request.CreateRecordReq;
+import com.movelog.domain.record.dto.request.SearchKeywordReq;
 import com.movelog.domain.record.dto.response.RecentRecordImagesRes;
+import com.movelog.domain.record.dto.response.SearchKeywordRes;
 import com.movelog.domain.record.dto.response.TodayRecordStatus;
 import com.movelog.domain.record.service.RecordService;
 import com.movelog.global.config.security.token.UserPrincipal;
@@ -77,6 +79,24 @@ public class RecordController {
             @Parameter(description = "키워드 ID(동사-명사 쌍에 대한 ID)를 입력해주세요.", required = true) @PathVariable Long keywordId
     ) {
         List<RecentRecordImagesRes> result = recordService.retrieveRecentRecordImages(userPrincipal, keywordId);
+        return ResponseEntity.ok(ApiResponseUtil.success(result));
+    }
+
+
+    @Operation(summary = "기록 내 명사 검색 API", description = "사용자가 생성한 기록 중 명사를 통해 동사-명사 쌍을 검색하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "기록 내 명사 검색 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = SearchKeywordRes.class))),
+            @ApiResponse(responseCode = "400", description = "기록 내 명사 검색 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/search")
+    public ResponseEntity<?> searchKeyword(
+            @Parameter(description = "User의 토큰을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "검색할 명사를 입력해주세요.", required = true) @RequestBody SearchKeywordReq searchKeywordReq
+            ) {
+        List<SearchKeywordRes> result = recordService.searchKeyword(userPrincipal, searchKeywordReq);
         return ResponseEntity.ok(ApiResponseUtil.success(result));
     }
 

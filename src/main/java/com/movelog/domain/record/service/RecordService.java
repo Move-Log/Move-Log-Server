@@ -4,7 +4,9 @@ import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.dto.request.CreateRecordReq;
+import com.movelog.domain.record.dto.request.SearchKeywordReq;
 import com.movelog.domain.record.dto.response.RecentRecordImagesRes;
+import com.movelog.domain.record.dto.response.SearchKeywordRes;
 import com.movelog.domain.record.dto.response.TodayRecordStatus;
 import com.movelog.domain.record.repository.KeywordRepository;
 import com.movelog.domain.record.repository.RecordRepository;
@@ -131,6 +133,26 @@ public class RecordService {
 
     }
 
+
+    public List<SearchKeywordRes> searchKeyword(UserPrincipal userPrincipal, SearchKeywordReq searchKeywordReq) {
+        User user = validUserById(userPrincipal.getId());
+        // User user = validUserById(5L);
+        String keyword = searchKeywordReq.getSearchKeyword();
+        List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
+
+        log.info("Search Keyword: {}", searchKeywordReq.getSearchKeyword());
+        keywords.forEach(k -> log.info("Keyword in DB: {}", k.getKeyword()));
+
+
+        return keywords.stream()
+                .map(k -> SearchKeywordRes.builder()
+                        .keywordId(k.getKeywordId())
+                        .noun(k.getKeyword())
+                        .verb(VerbType.getStringVerbType(k.getVerbType()))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private User validUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         return userOptional.get();
@@ -153,5 +175,4 @@ public class RecordService {
             throw new IllegalArgumentException("noun is required.");
         }
     }
-
 }
