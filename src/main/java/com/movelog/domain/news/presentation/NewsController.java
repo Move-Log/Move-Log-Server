@@ -5,6 +5,7 @@ import com.movelog.domain.news.dto.request.CreateNewsReq;
 import com.movelog.domain.news.dto.request.NewsHeadLineReq;
 import com.movelog.domain.news.dto.response.HeadLineRes;
 import com.movelog.domain.news.dto.response.RecentKeywordsRes;
+import com.movelog.domain.news.dto.response.RecentNewsRes;
 import com.movelog.global.config.security.token.CurrentUser;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.Message;
@@ -55,7 +56,7 @@ public class NewsController {
     }
 
 
-    @Operation(summary = "뉴스 생성 및 저장 API(기존 이미지 기록 기반)", description = "사용자의 기존 기록 이미지로 뉴스를 생성합니다.")
+    @Operation(summary = "뉴스 생성 및 저장 API", description = "새로운 뉴스를 생성하고 저장합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "뉴스 생성 및 저장 성공",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class))),
@@ -89,6 +90,28 @@ public class NewsController {
         List<RecentKeywordsRes> response = newsService.getRecentKeywords(userPrincipal);
         return ResponseEntity.ok(ApiResponseUtil.success(response));
     }
+
+    @Operation(summary = "최근 뉴스 목록 조회 API", description = "최근 일주일간 생성한 뉴스 목록을 1페이지 당 15개씩 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "최근 뉴스 목록 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = RecentNewsRes.class))),
+            @ApiResponse(responseCode = "400", description = "최근 뉴스 목록 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/week")
+    public ResponseEntity<?> getRecentNews(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true)
+                @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "뉴스 목록의 페이지 번호를 입력해주세요. **Page는 1부터 시작됩니다!**", required = true)
+                @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
+    ) {
+        List<RecentNewsRes> response = newsService.getRecentNews(userPrincipal, page);
+        return ResponseEntity.ok(ApiResponseUtil.success(response));
+    }
+
+
+
 
 
 
