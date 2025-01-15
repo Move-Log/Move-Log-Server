@@ -18,4 +18,6 @@ public interface KeywordRepository extends JpaRepository<Keyword,Long> {
     boolean existsByUserAndKeywordAndVerbType(User user, String noun, VerbType verbType);
 
     Keyword findByUserAndKeywordAndVerbType(User user, String noun, VerbType verbType);
+
+    List<Keyword> findAllByUserAndKeywordContaining(User user, String keyword);
 }
