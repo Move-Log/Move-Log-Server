@@ -6,6 +6,7 @@ import com.movelog.domain.news.dto.request.CreateNewsReq;
 import com.movelog.domain.news.dto.request.NewsHeadLineReq;
 import com.movelog.domain.news.dto.response.HeadLineRes;
 import com.movelog.domain.news.dto.response.RecentKeywordsRes;
+import com.movelog.domain.news.dto.response.RecentNewsRes;
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.exception.KeywordNotFoundException;
@@ -17,10 +18,13 @@ import com.movelog.domain.user.exception.UserNotFoundException;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.util.S3Util;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,6 +81,29 @@ public class NewsService {
                         .keywordId(keyword.getKeywordId())
                         .verb(VerbType.getStringVerbType(keyword.getVerbType()))
                         .noun(keyword.getKeyword())
+                        .build())
+                .toList();
+    }
+
+    public List<RecentNewsRes> getRecentNews(UserPrincipal userPrincipal, Integer page) {
+        User user = validateUser(userPrincipal);
+        // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
+
+        //페이징 객체 생성
+        Pageable pageable = PageRequest.of(page, 15);
+
+        // 최근 일주일간 생성한 뉴스 목록 조회
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(7);
+        List<News> recentNews = newsRepository.findRecentNewsByUser(user, createdAt, pageable);
+
+        return recentNews.stream()
+                .map(news -> RecentNewsRes.builder()
+                        .newsId(news.getNewsId())
+                        .newsImageUrl(news.getNewsUrl())
+                        .headLine(news.getHeadLine())
+                        .noun(news.getKeyword().getKeyword())
+                        .verb(VerbType.getStringVerbType(news.getKeyword().getVerbType()))
+                        .createdAt(news.getCreatedAt())
                         .build())
                 .toList();
     }
