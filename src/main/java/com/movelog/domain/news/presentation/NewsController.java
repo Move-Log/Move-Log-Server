@@ -103,7 +103,7 @@ public class NewsController {
     public ResponseEntity<?> getRecentNews(
             @Parameter(description = "Access Token을 입력해주세요.", required = true)
                 @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Parameter(description = "뉴스 목록의 페이지 번호를 입력해주세요. **Page는 1부터 시작됩니다!**", required = true)
+            @Parameter(description = "뉴스 목록의 페이지 번호를 입력해주세요. **Page는 0부터 시작됩니다!**", required = true)
                 @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
         List<RecentNewsRes> response = newsService.getRecentNews(userPrincipal, page);
