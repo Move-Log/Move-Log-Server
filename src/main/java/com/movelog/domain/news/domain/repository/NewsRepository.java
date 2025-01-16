@@ -1,6 +1,7 @@
 package com.movelog.domain.news.domain.repository;
 
 import com.movelog.domain.news.domain.News;
+import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.user.domain.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +25,6 @@ public interface NewsRepository extends JpaRepository<News, Long> {
             @Param("createdAt") LocalDateTime createdAt,
             Pageable pageable
     );
+
+    long countByKeyword(Keyword keyword);
 }

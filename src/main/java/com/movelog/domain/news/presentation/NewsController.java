@@ -6,6 +6,7 @@ import com.movelog.domain.news.dto.request.NewsHeadLineReq;
 import com.movelog.domain.news.dto.response.HeadLineRes;
 import com.movelog.domain.news.dto.response.RecentKeywordsRes;
 import com.movelog.domain.news.dto.response.RecentNewsRes;
+import com.movelog.domain.news.dto.response.TodayNewsStatusRes;
 import com.movelog.global.config.security.token.CurrentUser;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.Message;
@@ -109,6 +110,25 @@ public class NewsController {
         List<RecentNewsRes> response = newsService.getRecentNews(userPrincipal, page);
         return ResponseEntity.ok(ApiResponseUtil.success(response));
     }
+
+
+    @Operation(summary = "뉴스 기록 현황 조회 API", description = "오늘 기준 사용자의 뉴스 기록 현황을 조회합니다. ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "뉴스 기록 현황 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = TodayNewsStatusRes.class))),
+            @ApiResponse(responseCode = "400", description = "뉴스 기록 현황 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/today")
+    public ResponseEntity<?> getTodayNewsStatus(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        TodayNewsStatusRes response = newsService.getTodayNewsStatus(userPrincipal);
+        return ResponseEntity.ok(ApiResponseUtil.success(response));
+    }
+
+
 
 
 
