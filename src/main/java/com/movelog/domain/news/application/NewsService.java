@@ -137,24 +137,23 @@ public class NewsService {
                 .build();
     }
 
-    public List<NewsCalendarRes> getNewsByDate(UserPrincipal userPrincipal, String date) {
+    public Page<NewsCalendarRes> getNewsByDate(UserPrincipal userPrincipal, String date, int page) {
         User user = validateUser(userPrincipal);
         // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
 
         LocalDateTime start = LocalDateTime.parse(date + "T00:00:00");
         LocalDateTime end = LocalDateTime.parse(date + "T23:59:59");
 
-        List<News> newsList = newsRepository.findNewsByUserAndCreatedAtBetween(user, start, end);
+        Pageable pageable = PageRequest.of(0, 15); // 원하는 페이지와 크기를 지정
+        Page<News> newsList = newsRepository.findNewsByUserAndCreatedAtBetween(user, start, end, pageable);
 
-        return newsList.stream()
-                .map(news -> NewsCalendarRes.builder()
-                        .newsId(news.getNewsId())
-                        .newsImageUrl(news.getNewsUrl())
-                        .noun(news.getKeyword().getKeyword())
-                        .verb(VerbType.getStringVerbType(news.getKeyword().getVerbType()))
-                        .createdAt(news.getCreatedAt())
-                        .build())
-                .toList();
+        return newsList.map(news -> NewsCalendarRes.builder()
+                .newsId(news.getNewsId())
+                .newsImageUrl(news.getNewsUrl())
+                .noun(news.getKeyword().getKeyword())
+                .verb(VerbType.getStringVerbType(news.getKeyword().getVerbType()))
+                .createdAt(news.getCreatedAt())
+                .build());
     }
 
     // User 정보 검증

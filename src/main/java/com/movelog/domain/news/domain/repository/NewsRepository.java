@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
@@ -29,11 +28,11 @@ public interface NewsRepository extends JpaRepository<News, Long> {
 
     long countByKeyword(Keyword keyword);
 
-
     @Query("SELECT n FROM News n " +
             "JOIN n.keyword k " +
             "WHERE k.user = :user " +
             "AND n.createdAt BETWEEN :start AND :end " +
             "ORDER BY n.createdAt ASC")
-    List<News> findNewsByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end);
+    Page<News> findNewsByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end, Pageable pageable);
+
 }

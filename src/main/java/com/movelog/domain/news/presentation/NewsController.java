@@ -139,9 +139,11 @@ public class NewsController {
     @GetMapping("/calendar/{date}")
     public ResponseEntity<?> getNewsByDate(
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Parameter(description = "조회할 날짜를 입력해주세요. (yyyy-MM-dd 형식)", required = true) @PathVariable String date
+            @Parameter(description = "조회할 날짜를 입력해주세요. (yyyy-MM-dd 형식)", required = true) @PathVariable String date,
+            @Parameter(description = "뉴스 목록의 페이지 번호를 입력해주세요. **Page는 0부터 시작됩니다!**", required = true)
+                @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
-        List<NewsCalendarRes> response = newsService.getNewsByDate(userPrincipal, date);
+        Page<NewsCalendarRes> response = newsService.getNewsByDate(userPrincipal, date, page);
         return ResponseEntity.ok(ApiResponseUtil.success(response));
     }
 
