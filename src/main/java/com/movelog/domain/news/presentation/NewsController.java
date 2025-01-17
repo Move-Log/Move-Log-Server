@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.ErrorResponse;
@@ -104,7 +105,7 @@ public class NewsController {
             @Parameter(description = "뉴스 목록의 페이지 번호를 입력해주세요. **Page는 0부터 시작됩니다!**", required = true)
                 @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
-        List<RecentNewsRes> response = newsService.getRecentNews(userPrincipal, page);
+        Page<RecentNewsRes> response = newsService.getRecentNews(userPrincipal, page);
         return ResponseEntity.ok(ApiResponseUtil.success(response));
     }
 
@@ -127,7 +128,7 @@ public class NewsController {
 
 
 
-    @Operation(summary = "날짜별 뉴스 목록 조회 API", description = "특정 날짜의 뉴스 목록을 조회합니다.")
+    @Operation(summary = "날짜별 뉴스 목록 조회 API", description = "특정 날짜의 뉴스 목록을 1페이지 당 15개씩 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "날짜별 뉴스 목록 조회 성공",
                     content = @Content(mediaType = "application/json",

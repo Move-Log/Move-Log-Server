@@ -16,6 +16,7 @@ import com.movelog.domain.user.exception.UserNotFoundException;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.util.S3Util;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -83,7 +84,7 @@ public class NewsService {
                 .toList();
     }
 
-    public List<RecentNewsRes> getRecentNews(UserPrincipal userPrincipal, Integer page) {
+    public Page<RecentNewsRes> getRecentNews(UserPrincipal userPrincipal, Integer page) {
         User user = validateUser(userPrincipal);
         // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
 
@@ -92,21 +93,16 @@ public class NewsService {
 
         // 최근 일주일간 생성한 뉴스 목록 조회
         LocalDateTime createdAt = LocalDateTime.now().minusDays(7);
-        List<News> recentNews = newsRepository.findRecentNewsByUser(user, createdAt, pageable);
+        Page<News> recentNews = newsRepository.findRecentNewsByUser(user, createdAt, pageable);
 
-        // 최신순 정렬
-        recentNews.sort((n1, n2) -> n2.getCreatedAt().compareTo(n1.getCreatedAt()));
-
-        return recentNews.stream()
-                .map(news -> RecentNewsRes.builder()
-                        .newsId(news.getNewsId())
-                        .newsImageUrl(news.getNewsUrl())
-                        .headLine(news.getHeadLine())
-                        .noun(news.getKeyword().getKeyword())
-                        .verb(VerbType.getStringVerbType(news.getKeyword().getVerbType()))
-                        .createdAt(news.getCreatedAt())
-                        .build())
-                .toList();
+        return recentNews.map(news -> RecentNewsRes.builder()
+                .newsId(news.getNewsId())
+                .newsImageUrl(news.getNewsUrl())
+                .headLine(news.getHeadLine())
+                .noun(news.getKeyword().getKeyword())
+                .verb(VerbType.getStringVerbType(news.getKeyword().getVerbType()))
+                .createdAt(news.getCreatedAt())
+                .build());
     }
 
     public TodayNewsStatusRes getTodayNewsStatus(UserPrincipal userPrincipal) {
