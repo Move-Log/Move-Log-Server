@@ -3,9 +3,7 @@ package com.movelog.domain.news.presentation;
 import com.movelog.domain.news.application.NewsService;
 import com.movelog.domain.news.dto.request.CreateNewsReq;
 import com.movelog.domain.news.dto.request.NewsHeadLineReq;
-import com.movelog.domain.news.dto.response.HeadLineRes;
-import com.movelog.domain.news.dto.response.RecentKeywordsRes;
-import com.movelog.domain.news.dto.response.RecentNewsRes;
+import com.movelog.domain.news.dto.response.*;
 import com.movelog.global.config.security.token.CurrentUser;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.Message;
@@ -20,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.ErrorResponse;
@@ -106,7 +105,45 @@ public class NewsController {
             @Parameter(description = "뉴스 목록의 페이지 번호를 입력해주세요. **Page는 0부터 시작됩니다!**", required = true)
                 @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
-        List<RecentNewsRes> response = newsService.getRecentNews(userPrincipal, page);
+        Page<RecentNewsRes> response = newsService.getRecentNews(userPrincipal, page);
+        return ResponseEntity.ok(ApiResponseUtil.success(response));
+    }
+
+
+    @Operation(summary = "뉴스 기록 현황 조회 API", description = "오늘 기준 사용자의 뉴스 기록 현황을 조회합니다. ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "뉴스 기록 현황 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = TodayNewsStatusRes.class))),
+            @ApiResponse(responseCode = "400", description = "뉴스 기록 현황 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/today")
+    public ResponseEntity<?> getTodayNewsStatus(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        TodayNewsStatusRes response = newsService.getTodayNewsStatus(userPrincipal);
+        return ResponseEntity.ok(ApiResponseUtil.success(response));
+    }
+
+
+
+    @Operation(summary = "날짜별 뉴스 목록 조회 API", description = "특정 날짜의 뉴스 목록을 1페이지 당 15개씩 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "날짜별 뉴스 목록 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = NewsCalendarRes.class))),
+            @ApiResponse(responseCode = "400", description = "날짜별 뉴스 목록 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/calendar/{date}")
+    public ResponseEntity<?> getNewsByDate(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "조회할 날짜를 입력해주세요. (yyyy-MM-dd 형식)", required = true) @PathVariable String date,
+            @Parameter(description = "뉴스 목록의 페이지 번호를 입력해주세요. **Page는 0부터 시작됩니다!**", required = true)
+                @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
+    ) {
+        Page<NewsCalendarRes> response = newsService.getNewsByDate(userPrincipal, date, page);
         return ResponseEntity.ok(ApiResponseUtil.success(response));
     }
 
