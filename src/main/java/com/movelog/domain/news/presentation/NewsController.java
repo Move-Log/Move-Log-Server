@@ -3,10 +3,7 @@ package com.movelog.domain.news.presentation;
 import com.movelog.domain.news.application.NewsService;
 import com.movelog.domain.news.dto.request.CreateNewsReq;
 import com.movelog.domain.news.dto.request.NewsHeadLineReq;
-import com.movelog.domain.news.dto.response.HeadLineRes;
-import com.movelog.domain.news.dto.response.RecentKeywordsRes;
-import com.movelog.domain.news.dto.response.RecentNewsRes;
-import com.movelog.domain.news.dto.response.TodayNewsStatusRes;
+import com.movelog.domain.news.dto.response.*;
 import com.movelog.global.config.security.token.CurrentUser;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.Message;
@@ -129,6 +126,23 @@ public class NewsController {
     }
 
 
+
+    @Operation(summary = "날짜별 뉴스 목록 조회 API", description = "특정 날짜의 뉴스 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "날짜별 뉴스 목록 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = NewsCalendarRes.class))),
+            @ApiResponse(responseCode = "400", description = "날짜별 뉴스 목록 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/calendar/{date}")
+    public ResponseEntity<?> getNewsByDate(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "조회할 날짜를 입력해주세요. (yyyy-MM-dd 형식)", required = true) @PathVariable String date
+    ) {
+        List<NewsCalendarRes> response = newsService.getNewsByDate(userPrincipal, date);
+        return ResponseEntity.ok(ApiResponseUtil.success(response));
+    }
 
 
 

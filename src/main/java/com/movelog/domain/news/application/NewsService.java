@@ -4,10 +4,7 @@ import com.movelog.domain.news.domain.News;
 import com.movelog.domain.news.domain.repository.NewsRepository;
 import com.movelog.domain.news.dto.request.CreateNewsReq;
 import com.movelog.domain.news.dto.request.NewsHeadLineReq;
-import com.movelog.domain.news.dto.response.HeadLineRes;
-import com.movelog.domain.news.dto.response.RecentKeywordsRes;
-import com.movelog.domain.news.dto.response.RecentNewsRes;
-import com.movelog.domain.news.dto.response.TodayNewsStatusRes;
+import com.movelog.domain.news.dto.response.*;
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.exception.KeywordNotFoundException;
@@ -144,6 +141,25 @@ public class NewsService {
                 .build();
     }
 
+    public List<NewsCalendarRes> getNewsByDate(UserPrincipal userPrincipal, String date) {
+        User user = validateUser(userPrincipal);
+        // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
+
+        LocalDateTime start = LocalDateTime.parse(date + "T00:00:00");
+        LocalDateTime end = LocalDateTime.parse(date + "T23:59:59");
+
+        List<News> newsList = newsRepository.findNewsByUserAndCreatedAtBetween(user, start, end);
+
+        return newsList.stream()
+                .map(news -> NewsCalendarRes.builder()
+                        .newsId(news.getNewsId())
+                        .newsImageUrl(news.getNewsUrl())
+                        .noun(news.getKeyword().getKeyword())
+                        .verb(VerbType.getStringVerbType(news.getKeyword().getVerbType()))
+                        .createdAt(news.getCreatedAt())
+                        .build())
+                .toList();
+    }
 
     // User 정보 검증
     private User validateUser(UserPrincipal userPrincipal) {
