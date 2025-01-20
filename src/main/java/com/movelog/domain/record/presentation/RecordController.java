@@ -1,8 +1,10 @@
 package com.movelog.domain.record.presentation;
 
+import com.movelog.domain.news.dto.response.NewsCalendarRes;
 import com.movelog.domain.record.dto.request.CreateRecordReq;
 import com.movelog.domain.record.dto.request.SearchKeywordReq;
 import com.movelog.domain.record.dto.response.RecentRecordImagesRes;
+import com.movelog.domain.record.dto.response.RecordCalendarRes;
 import com.movelog.domain.record.dto.response.SearchKeywordRes;
 import com.movelog.domain.record.dto.response.TodayRecordStatus;
 import com.movelog.domain.record.service.RecordService;
@@ -16,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.ErrorResponse;
@@ -45,7 +48,7 @@ public class RecordController {
             @Parameter(description = "Schemas의 CreateRecordReq를 참고해주세요.", required = true) @RequestPart CreateRecordReq createRecordReq,
             @RequestPart(value = "img", required = false) MultipartFile img
     ) {
-        recordService.createRecord(userPrincipal.getId(), createRecordReq, img);
+        recordService.createRecord(userPrincipal, createRecordReq, img);
         return ResponseEntity.ok(ApiResponseUtil.success(Message.builder().message("기록이 생성되었습니다.").build()));
     }
 
@@ -61,7 +64,7 @@ public class RecordController {
     public ResponseEntity<?> retrieveTodayRecord(
             @Parameter(description = "User의 토큰을 입력해주세요.", required = false) @AuthenticationPrincipal UserPrincipal userPrincipal
             ) {;
-        TodayRecordStatus result = recordService.retrieveTodayRecord(5L);
+        TodayRecordStatus result = recordService.retrieveTodayRecord(userPrincipal);
         return ResponseEntity.ok(ApiResponseUtil.success(result));
     }
 
@@ -100,6 +103,26 @@ public class RecordController {
         return ResponseEntity.ok(ApiResponseUtil.success(result));
     }
 
+
+    @Operation(summary = "날짜별 기록 목록 조회 API", description = "특정 날짜에 생성된 기록 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "날짜별 기록 목록 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = RecordCalendarRes.class))),
+            @ApiResponse(responseCode = "400", description = "날짜별 기록 목록 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+
+    })
+    @GetMapping("/calendar/{date}")
+    public ResponseEntity<?> getRecordByDate(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "조회할 날짜를 입력해주세요. (yyyy-MM-dd 형식)", required = true) @PathVariable String date,
+            @Parameter(description = "기록 목록의 페이지 번호를 입력해주세요. **Page는 0부터 시작됩니다!**", required = true)
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
+    ) {
+        Page<RecordCalendarRes> response = recordService.getRecordByDate(userPrincipal, date, page);
+        return ResponseEntity.ok(ApiResponseUtil.success(response));
+    }
 
 
 }
