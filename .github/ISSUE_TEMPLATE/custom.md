@@ -1,3 +1,11 @@
+---
+name: Task request
+about: Suggest an idea for this project
+title: ""
+labels: 
+assignees: EunbeenDev
+
+---
 ## 🍀 Summary
 > 어떤 기능인가요?
 -
