@@ -145,10 +145,9 @@ public class RecordService {
     }
 
 
-    public List<SearchKeywordRes> searchKeyword(UserPrincipal userPrincipal, SearchKeywordReq searchKeywordReq) {
+    public List<SearchKeywordRes> searchKeyword(UserPrincipal userPrincipal, String keyword) {
         User user = validUserById(userPrincipal);
         // User user = validUserById(5L);
-        String keyword = searchKeywordReq.getSearchKeyword();
         List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
         keywords.forEach(k -> log.info("Keyword in DB: {}", k.getKeyword()));
 

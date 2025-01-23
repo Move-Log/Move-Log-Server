@@ -97,9 +97,9 @@ public class RecordController {
     @GetMapping("/search")
     public ResponseEntity<?> searchKeyword(
             @Parameter(description = "User의 토큰을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Parameter(description = "검색할 명사를 입력해주세요.", required = true) @RequestBody SearchKeywordReq searchKeywordReq
+            @Parameter(description = "검색할 명사를 입력해주세요.", required = true) @RequestParam String keyword
             ) {
-        List<SearchKeywordRes> result = recordService.searchKeyword(userPrincipal, searchKeywordReq);
+        List<SearchKeywordRes> result = recordService.searchKeyword(userPrincipal, keyword);
         return ResponseEntity.ok(ApiResponseUtil.success(result));
     }
 
