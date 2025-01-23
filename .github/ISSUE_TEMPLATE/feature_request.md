@@ -1,3 +1,12 @@
+---
+name: Feature request
+about: Suggest an idea for this project
+title: "[FEAT]"
+labels: feature ✨
+assignees: EunbeenDev
+
+---
+
 ## 🍀 Summary
 > 어떤 기능인가요?
 -
@@ -7,3 +16,7 @@
 
 ## ☁️ Reference
 - 
+
+
+**Additional context**
+Add any other context or screenshots about the feature request here.
