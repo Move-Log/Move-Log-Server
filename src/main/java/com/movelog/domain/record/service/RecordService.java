@@ -1,22 +1,30 @@
 package com.movelog.domain.record.service;
 
+import com.movelog.domain.news.domain.News;
+import com.movelog.domain.news.dto.response.NewsCalendarRes;
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.dto.request.CreateRecordReq;
 import com.movelog.domain.record.dto.request.SearchKeywordReq;
 import com.movelog.domain.record.dto.response.RecentRecordImagesRes;
+import com.movelog.domain.record.dto.response.RecordCalendarRes;
 import com.movelog.domain.record.dto.response.SearchKeywordRes;
 import com.movelog.domain.record.dto.response.TodayRecordStatus;
 import com.movelog.domain.record.repository.KeywordRepository;
 import com.movelog.domain.record.repository.RecordRepository;
+import com.movelog.domain.user.application.UserService;
 import com.movelog.domain.user.domain.User;
 import com.movelog.domain.user.domain.repository.UserRepository;
+import com.movelog.domain.user.exception.UserNotFoundException;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.util.S3Util;
 import jakarta.validation.ConstraintViolation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,14 +42,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RecordService {
     private final RecordRepository recordRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+
     private final KeywordRepository keywordRepository;
     private final S3Util s3Util;
+    private final UserRepository userRepository;
 
     @Transactional
-    public void createRecord(Long userId, CreateRecordReq createRecordReq, MultipartFile img) {
-        User user = validUserById(userId);
-        // User user = validUserById(5L);
+    public void createRecord(UserPrincipal userPrincipal, CreateRecordReq createRecordReq, MultipartFile img) {
+        User user = validUserById(userPrincipal);
+        // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
         validateCreateRecordReq(createRecordReq);
 
         String recordImgUrl = s3Util.uploadToRecordFolder(img);
@@ -83,9 +93,9 @@ public class RecordService {
     }
 
 
-    public TodayRecordStatus retrieveTodayRecord(Long userId) {
+    public TodayRecordStatus retrieveTodayRecord(UserPrincipal userPrincipal) {
         // 유저 유효성 검사 및 조회
-        User user = validUserById(userId);
+        User user = validUserById(userPrincipal);
 
         // 오늘의 시작 시간과 끝 시간 계산
         LocalDate today = LocalDate.now();
@@ -120,7 +130,7 @@ public class RecordService {
     }
 
     public List<RecentRecordImagesRes> retrieveRecentRecordImages(UserPrincipal userPrincipal, Long keywordId) {
-        User user = validUserById(userPrincipal.getId());
+        User user = validUserById(userPrincipal);
         // User user = validUserById(5L);
         Keyword keyword = validKeywordById(keywordId);
         List<Record> records = recordRepository.findTop5ByKeywordOrderByActionTimeDesc(keyword);
@@ -136,7 +146,7 @@ public class RecordService {
 
 
     public List<SearchKeywordRes> searchKeyword(UserPrincipal userPrincipal, SearchKeywordReq searchKeywordReq) {
-        User user = validUserById(userPrincipal.getId());
+        User user = validUserById(userPrincipal);
         // User user = validUserById(5L);
         String keyword = searchKeywordReq.getSearchKeyword();
         List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
@@ -161,8 +171,29 @@ public class RecordService {
         return sortedResults;
     }
 
-    private User validUserById(Long userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
+    public Page<RecordCalendarRes> getRecordByDate(UserPrincipal userPrincipal, String date, Integer page) {
+        User user = validUserById(userPrincipal);
+        // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
+        LocalDateTime start = LocalDateTime.parse(date + "T00:00:00");
+        LocalDateTime end = LocalDateTime.parse(date + "T23:59:59");
+
+        Pageable pageable = PageRequest.of(0, 15); // 원하는 페이지와 크기를 지정
+        Page<Record> recordList = recordRepository.findRecordByUserAndCreatedAtBetween(user, start, end, pageable);
+
+        return recordList.map(record -> RecordCalendarRes.builder()
+                .recordId(record.getRecordId())
+                .recordImageUrl(record.getRecordImage())
+                .noun(record.getKeyword().getKeyword())
+                .verb(VerbType.getStringVerbType(record.getKeyword().getVerbType()))
+                .createdAt(record.getCreatedAt())
+                .build());
+
+    }
+
+
+    private User validUserById(UserPrincipal userPrincipal) {
+        Optional<User> userOptional = userService.findById(userPrincipal.getId());
+        if (userOptional.isEmpty()) { throw new UserNotFoundException(); }
         return userOptional.get();
     }
 
@@ -183,4 +214,6 @@ public class RecordService {
             throw new IllegalArgumentException("noun is required.");
         }
     }
+
+
 }

@@ -3,7 +3,10 @@ package com.movelog.domain.record.repository;
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
 import com.movelog.domain.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -15,4 +18,11 @@ public interface RecordRepository extends JpaRepository<Record,Long> {
     List<Record> findByKeywordInAndActionTimeBetween(List<Keyword> keywords, LocalDateTime startTime, LocalDateTime endTime);
 
     List<Record> findTop5ByKeywordOrderByActionTimeDesc(Keyword keyword);
+
+    @Query("SELECT r FROM Record r " +
+            "JOIN r.keyword k " +
+            "WHERE k.user = :user " +
+            "AND r.actionTime BETWEEN :start AND :end " +
+            "ORDER BY r.actionTime ASC")
+    Page<Record> findRecordByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end, Pageable pageable);
 }
