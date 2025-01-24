@@ -25,4 +25,10 @@ public interface RecordRepository extends JpaRepository<Record,Long> {
             "AND r.actionTime BETWEEN :start AND :end " +
             "ORDER BY r.actionTime ASC")
     Page<Record> findRecordByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end, Pageable pageable);
+
+
+    // 사용자가 등록한 기록 중 가장 최근 5개의 기록을 조회, 이미지가 있는 경우만 조회
+    // 5개의 기록만 조회
+    List<Record> findTop5ByKeywordUserAndRecordImageNotNullOrderByActionTimeDesc(User user);
+
 }

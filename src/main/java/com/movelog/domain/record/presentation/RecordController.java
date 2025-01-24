@@ -3,10 +3,7 @@ package com.movelog.domain.record.presentation;
 import com.movelog.domain.news.dto.response.NewsCalendarRes;
 import com.movelog.domain.record.dto.request.CreateRecordReq;
 import com.movelog.domain.record.dto.request.SearchKeywordReq;
-import com.movelog.domain.record.dto.response.RecentRecordImagesRes;
-import com.movelog.domain.record.dto.response.RecordCalendarRes;
-import com.movelog.domain.record.dto.response.SearchKeywordRes;
-import com.movelog.domain.record.dto.response.TodayRecordStatus;
+import com.movelog.domain.record.dto.response.*;
 import com.movelog.domain.record.service.RecordService;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.Message;
@@ -97,9 +94,9 @@ public class RecordController {
     @GetMapping("/search")
     public ResponseEntity<?> searchKeyword(
             @Parameter(description = "User의 토큰을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Parameter(description = "검색할 명사를 입력해주세요.", required = true) @RequestBody SearchKeywordReq searchKeywordReq
+            @Parameter(description = "검색할 명사를 입력해주세요.", required = true) @RequestParam String keyword
             ) {
-        List<SearchKeywordRes> result = recordService.searchKeyword(userPrincipal, searchKeywordReq);
+        List<SearchKeywordRes> result = recordService.searchKeyword(userPrincipal, keyword);
         return ResponseEntity.ok(ApiResponseUtil.success(result));
     }
 
@@ -123,6 +120,24 @@ public class RecordController {
         Page<RecordCalendarRes> response = recordService.getRecordByDate(userPrincipal, date, page);
         return ResponseEntity.ok(ApiResponseUtil.success(response));
     }
+
+
+    @Operation(summary = "사용자 기록 이미지 중 최신 5개 목록 조회 API", description = "사용자가 생성한 기록 이미지 중 최신 5개 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "최신 5개 기록 이미지 목록 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = Recent5RecordImagesRes.class))),
+            @ApiResponse(responseCode = "400", description = "최신 5개 기록 이미지 목록 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/current")
+    public ResponseEntity<?> retrieveCurrentRecordImages(
+            @Parameter(description = "User의 토큰을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        List<Recent5RecordImagesRes> result = recordService.retrieveCurrentRecordImages(userPrincipal);
+        return ResponseEntity.ok(ApiResponseUtil.success(result));
+    }
+
 
 
 }

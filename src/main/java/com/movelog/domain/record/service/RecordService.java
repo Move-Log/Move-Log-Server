@@ -7,10 +7,7 @@ import com.movelog.domain.record.domain.Record;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.dto.request.CreateRecordReq;
 import com.movelog.domain.record.dto.request.SearchKeywordReq;
-import com.movelog.domain.record.dto.response.RecentRecordImagesRes;
-import com.movelog.domain.record.dto.response.RecordCalendarRes;
-import com.movelog.domain.record.dto.response.SearchKeywordRes;
-import com.movelog.domain.record.dto.response.TodayRecordStatus;
+import com.movelog.domain.record.dto.response.*;
 import com.movelog.domain.record.repository.KeywordRepository;
 import com.movelog.domain.record.repository.RecordRepository;
 import com.movelog.domain.user.application.UserService;
@@ -145,10 +142,9 @@ public class RecordService {
     }
 
 
-    public List<SearchKeywordRes> searchKeyword(UserPrincipal userPrincipal, SearchKeywordReq searchKeywordReq) {
+    public List<SearchKeywordRes> searchKeyword(UserPrincipal userPrincipal, String keyword) {
         User user = validUserById(userPrincipal);
         // User user = validUserById(5L);
-        String keyword = searchKeywordReq.getSearchKeyword();
         List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
         keywords.forEach(k -> log.info("Keyword in DB: {}", k.getKeyword()));
 
@@ -188,6 +184,19 @@ public class RecordService {
                 .createdAt(record.getCreatedAt())
                 .build());
 
+    }
+
+    public List<Recent5RecordImagesRes> retrieveCurrentRecordImages(UserPrincipal userPrincipal) {
+        User user = validUserById(userPrincipal);
+        // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
+
+        List<Record> records = recordRepository.findTop5ByKeywordUserAndRecordImageNotNullOrderByActionTimeDesc(user);
+
+        return records.stream()
+                .map(record -> Recent5RecordImagesRes.builder()
+                        .imageUrl((record.getRecordImage()))
+                        .build())
+                .toList();
     }
 
 
