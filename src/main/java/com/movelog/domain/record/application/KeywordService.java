@@ -37,11 +37,8 @@ public class KeywordService {
 
         validUserById(userPrincipal);
 
-        // 검색어 전처리
-        String processedKeyword = keyword.trim();
-
         // 검색어를 포함한 키워드 리스트 조회
-        List<Keyword> keywords = keywordRepository.findAllKeywordStartingWith(processedKeyword);
+        List<Keyword> keywords = keywordRepository.findAllKeywordStartingWith(keyword);
         log.info("Searching for keywords starting with: {}", keyword);
 
         // 기록이 많은 순서대로 정렬
