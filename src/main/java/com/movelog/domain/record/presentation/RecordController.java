@@ -1,10 +1,8 @@
 package com.movelog.domain.record.presentation;
 
-import com.movelog.domain.news.dto.response.NewsCalendarRes;
 import com.movelog.domain.record.dto.request.CreateRecordReq;
-import com.movelog.domain.record.dto.request.SearchKeywordReq;
 import com.movelog.domain.record.dto.response.*;
-import com.movelog.domain.record.service.RecordService;
+import com.movelog.domain.record.application.RecordService;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.Message;
 import com.movelog.global.util.ApiResponseUtil;
@@ -23,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("api/v1/record")
