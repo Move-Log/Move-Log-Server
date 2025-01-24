@@ -63,6 +63,9 @@ jobs:
           
           mkdir -p ./src/main/resources/webclient
           echo "${{ secrets.APPLICATION_WEBCLIENT_YML }}" | base64 --decode > ./src/main/resources/webclient/application-webclient.yml
+          
+          mkdir -p ./src/main/resources/redis
+            echo "${{ secrets.APPLICATION_REDIS_YML }}" | base64 --decode > ./src/main/resources/redis/application-redis.yml
 
       # Docker 이미지 빌드
       - name: Build Docker image

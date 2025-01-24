@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @PropertySource(value = { "classpath:s3/application-s3.yml" }, factory = YamlPropertySourceFactory.class)
 @PropertySource(value = { "classpath:chatgpt/application-chatgpt.yml" }, factory = YamlPropertySourceFactory.class)
 @PropertySource(value = { "classpath:webclient/application-webclient.yml" }, factory = YamlPropertySourceFactory.class)
+@PropertySource(value = { "classpath:redis/application-redis.yml" }, factory = YamlPropertySourceFactory.class)
 public class MoveLogApplication {
     public static void main(String[] args) {
         SpringApplication.run(MoveLogApplication.class, args);
