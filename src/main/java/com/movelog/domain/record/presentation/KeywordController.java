@@ -31,12 +31,12 @@ public class KeywordController {
 
     private final KeywordService keywordService;
 
-    @Operation(summary = "단어 통계 조회 API", description = "서비스 내에서 생성된 단어를 검색하는 API입니다.")
+    @Operation(summary = "통계 조회 시 단어 검색 API", description = "통계 조회 시 서비스 내에서 생성된 단어를 검색하는 API입니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "단어 통계 조회 성공",
+            @ApiResponse(responseCode = "200", description = "단어 검색 결과 조회 성공",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(type = "array", implementation = SearchKeywordInStatsRes.class))),
-            @ApiResponse(responseCode = "400", description = "단어 통계 조회 실패",
+            @ApiResponse(responseCode = "400", description = "단어 검색 결과 조회 실패",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/search")
@@ -47,4 +47,6 @@ public class KeywordController {
         List<SearchKeywordInStatsRes> response = keywordService.searchKeywordInStats(userPrincipal, keyword);
         return ResponseEntity.ok(response);
     }
+
+
 }
