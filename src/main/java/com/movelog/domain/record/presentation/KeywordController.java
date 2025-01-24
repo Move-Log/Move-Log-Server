@@ -39,7 +39,7 @@ public class KeywordController {
             @ApiResponse(responseCode = "400", description = "단어 검색 결과 조회 실패",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @GetMapping("/search")
+    @GetMapping("/stats/search")
     public ResponseEntity<?> searchKeywordInStats(
         @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
         @Parameter(description = "검색할 명사를 입력해주세요.", required = true) @RequestParam String keyword
@@ -47,6 +47,8 @@ public class KeywordController {
         List<SearchKeywordInStatsRes> response = keywordService.searchKeywordInStats(userPrincipal, keyword);
         return ResponseEntity.ok(response);
     }
+
+
 
 
 }
