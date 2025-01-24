@@ -14,6 +14,7 @@ import com.movelog.domain.user.exception.UserNotFoundException;
 import com.movelog.global.config.security.token.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,10 +35,14 @@ public class KeywordService {
 
     public List<SearchKeywordInStatsRes> searchKeywordInStats(UserPrincipal userPrincipal, String keyword) {
 
-        User user = validUserById(userPrincipal);
+        validUserById(userPrincipal);
+
+        // 검색어 전처리
+        String processedKeyword = keyword.trim();
 
         // 검색어를 포함한 키워드 리스트 조회
-        List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
+        List<Keyword> keywords = keywordRepository.findAllKeywordStartingWith(processedKeyword);
+        log.info("Searching for keywords starting with: {}", keyword);
 
         // 기록이 많은 순서대로 정렬
         keywords = sortKeywordByRecordCount(keywords);
@@ -123,8 +128,8 @@ public class KeywordService {
     }
 
     private User validUserById(UserPrincipal userPrincipal) {
-        Optional<User> userOptional = userService.findById(userPrincipal.getId());
-        // Optional<User> userOptional = userRepository.findById(5L);
+        // Optional<User> userOptional = userService.findById(userPrincipal.getId());
+        Optional<User> userOptional = userRepository.findById(5L);
         if (userOptional.isEmpty()) { throw new UserNotFoundException(); }
         return userOptional.get();
     }
