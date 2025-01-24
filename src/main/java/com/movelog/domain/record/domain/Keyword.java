@@ -44,4 +44,5 @@ public class Keyword extends BaseEntity {
         this.keyword = keyword;
         this.verbType = verbType;
     }
+
 }

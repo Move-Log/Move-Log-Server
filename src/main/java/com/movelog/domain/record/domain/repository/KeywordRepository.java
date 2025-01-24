@@ -20,4 +20,5 @@ public interface KeywordRepository extends JpaRepository<Keyword,Long> {
     Keyword findByUserAndKeywordAndVerbType(User user, String noun, VerbType verbType);
 
     List<Keyword> findAllByUserAndKeywordContaining(User user, String keyword);
+
 }

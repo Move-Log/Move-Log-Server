@@ -1,11 +1,15 @@
 package com.movelog.domain.record.application;
 
 import com.movelog.domain.record.domain.Keyword;
+import com.movelog.domain.record.domain.Record;
+import com.movelog.domain.record.domain.repository.RecordRepository;
+import com.movelog.domain.record.dto.response.MyKeywordStatsRes;
 import com.movelog.domain.record.dto.response.SearchKeywordInStatsRes;
 import com.movelog.domain.record.exception.KeywordNotFoundException;
 import com.movelog.domain.record.domain.repository.KeywordRepository;
 import com.movelog.domain.user.application.UserService;
 import com.movelog.domain.user.domain.User;
+import com.movelog.domain.user.domain.repository.UserRepository;
 import com.movelog.domain.user.exception.UserNotFoundException;
 import com.movelog.global.config.security.token.UserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,10 +28,14 @@ import java.util.Optional;
 public class KeywordService {
 
     private final UserService userService;
+    private final UserRepository userRepository;
     private final KeywordRepository keywordRepository;
+    private final RecordRepository recordRepository;
 
     public List<SearchKeywordInStatsRes> searchKeywordInStats(UserPrincipal userPrincipal, String keyword) {
+
         User user = validUserById(userPrincipal);
+
         // 검색어를 포함한 키워드 리스트 조회
         List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
 
@@ -40,6 +49,19 @@ public class KeywordService {
                         .build())
                 .toList();
 
+    }
+
+    public MyKeywordStatsRes getMyKeywordStatsRes(UserPrincipal userPrincipal, Long keywordId) {
+        validUserById(userPrincipal);
+        Keyword keyword = validKeywordById(keywordId);
+
+        return MyKeywordStatsRes.builder()
+                .noun(keyword.getKeyword())
+                .count(keywordRecordCount(keywordId))
+                .lastRecordedAt(getLastRecordedAt(keywordId))
+                .avgDailyRecord(calculateAverageDailyRecords(keywordId))
+                .avgWeeklyRecord(getAvgWeeklyRecord(keywordId))
+                .build();
     }
 
 
@@ -56,8 +78,53 @@ public class KeywordService {
                 .toList();
     }
 
+    // 키워드의 마지막 기록 시간을 반환
+    private LocalDateTime getLastRecordedAt(Long keywordId) {
+        Record record = recordRepository.findTopByKeywordKeywordIdOrderByActionTimeDesc(keywordId);
+        return record.getActionTime();
+    }
+
+    // 키워드의 일일 평균 기록 수를 반환
+    public double calculateAverageDailyRecords(Long keywordId) {
+        List<Object[]> results = recordRepository.findKeywordRecordCountsByDate(keywordId);
+
+        // 총 기록 수와 기록된 날짜 수 계산
+        long totalRecords = results.stream()
+                .mapToLong(row -> (Long) row[0])  // recordCount
+                .sum();
+
+        long days = results.size();  // 날짜 수
+
+        // 일일 평균 계산
+        double result = days == 0 ? 0 : (double) totalRecords / days;
+        // 소수점 둘째 자리에서 반올림하여 반환
+        return roundToTwoDecimal(result);
+    }
+
+    // 키워드의 최근 7일간 평균 기록 수를 반환
+    public double getAvgWeeklyRecord(Long keywordId) {
+        Keyword keyword = validKeywordById(keywordId);
+        List<Record> records = recordRepository.findTop5ByKeywordOrderByActionTimeDesc(keyword);
+
+        // 최근 7일간 기록 수 계산
+        long totalRecords = records.size();
+        long days = 7;
+
+        // 일일 평균 계산
+        double result = days == 0 ? 0 : (double) totalRecords / days;
+        // 소수점 둘째 자리에서 반올림하여 반환
+        return roundToTwoDecimal(result);
+
+    }
+
+    // 소수점 둘째 자리에서 반올림하여 반환
+    private double roundToTwoDecimal(double value) {
+        return Math.round(value * 100) / 100.0;
+    }
+
     private User validUserById(UserPrincipal userPrincipal) {
         Optional<User> userOptional = userService.findById(userPrincipal.getId());
+        // Optional<User> userOptional = userRepository.findById(5L);
         if (userOptional.isEmpty()) { throw new UserNotFoundException(); }
         return userOptional.get();
     }
