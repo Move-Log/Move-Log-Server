@@ -2,6 +2,7 @@ package com.movelog.domain.record.presentation;
 
 import com.movelog.domain.record.application.KeywordService;
 import com.movelog.domain.record.dto.response.MyKeywordStatsRes;
+import com.movelog.domain.record.dto.response.RecommendKeywordInStatsRes;
 import com.movelog.domain.record.dto.response.SearchKeywordInStatsRes;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.payload.ErrorResponse;
@@ -64,6 +65,21 @@ public class StatsController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "통계 추천 단어 조회 API", description = "사용자가 최근 기록한 단어 목록(최대 5개)을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "통계 추천 단어 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = RecommendKeywordInStatsRes.class))),
+            @ApiResponse(responseCode = "400", description = "통계 추천 단어 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/word/recommend")
+    public ResponseEntity<?> getRecommendKeywords(
+        @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal
+        ) {
+        List<RecommendKeywordInStatsRes> response = keywordService.getRecommendKeywords(userPrincipal);
+        return ResponseEntity.ok(response);
+    }
 
 
 }
