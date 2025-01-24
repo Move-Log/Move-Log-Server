@@ -4,6 +4,7 @@ import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
 import com.movelog.domain.record.domain.repository.RecordRepository;
 import com.movelog.domain.record.dto.response.MyKeywordStatsRes;
+import com.movelog.domain.record.dto.response.RecommendKeywordInStatsRes;
 import com.movelog.domain.record.dto.response.SearchKeywordInStatsRes;
 import com.movelog.domain.record.exception.KeywordNotFoundException;
 import com.movelog.domain.record.domain.repository.KeywordRepository;
@@ -14,6 +15,7 @@ import com.movelog.domain.user.exception.UserNotFoundException;
 import com.movelog.global.config.security.token.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,10 +36,11 @@ public class KeywordService {
 
     public List<SearchKeywordInStatsRes> searchKeywordInStats(UserPrincipal userPrincipal, String keyword) {
 
-        User user = validUserById(userPrincipal);
+        validUserById(userPrincipal);
 
         // 검색어를 포함한 키워드 리스트 조회
-        List<Keyword> keywords = keywordRepository.findAllByUserAndKeywordContaining(user, keyword);
+        List<Keyword> keywords = keywordRepository.findAllKeywordStartingWith(keyword);
+        log.info("Searching for keywords starting with: {}", keyword);
 
         // 기록이 많은 순서대로 정렬
         keywords = sortKeywordByRecordCount(keywords);
@@ -54,6 +57,10 @@ public class KeywordService {
     public MyKeywordStatsRes getMyKeywordStatsRes(UserPrincipal userPrincipal, Long keywordId) {
         validUserById(userPrincipal);
         Keyword keyword = validKeywordById(keywordId);
+        // 사용자가 기록한 키워드가 아닐 시, 빈 배열 반환
+        if (!keyword.getUser().getId().equals(userPrincipal.getId())) {
+            return MyKeywordStatsRes.builder().build();
+        }
 
         return MyKeywordStatsRes.builder()
                 .noun(keyword.getKeyword())
@@ -122,6 +129,18 @@ public class KeywordService {
         return Math.round(value * 100) / 100.0;
     }
 
+    public List<RecommendKeywordInStatsRes> getRecommendKeywords(UserPrincipal userPrincipal) {
+        User user = validUserById(userPrincipal);
+        List<Keyword> keywords = keywordRepository.findTop5ByUserOrderByCreatedAtDesc(user);
+
+        return keywords.stream()
+                .map(keyword -> RecommendKeywordInStatsRes.builder()
+                        .keywordId(keyword.getKeywordId())
+                        .noun(keyword.getKeyword())
+                        .build())
+                .toList();
+    }
+
     private User validUserById(UserPrincipal userPrincipal) {
         Optional<User> userOptional = userService.findById(userPrincipal.getId());
         // Optional<User> userOptional = userRepository.findById(5L);
@@ -134,5 +153,6 @@ public class KeywordService {
         if(keywordOptional.isEmpty()) { throw new KeywordNotFoundException(); }
         return keywordOptional.get();
     }
+
 
 }
