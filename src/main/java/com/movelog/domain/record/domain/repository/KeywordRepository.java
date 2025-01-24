@@ -1,4 +1,4 @@
-package com.movelog.domain.record.repository;
+package com.movelog.domain.record.domain.repository;
 
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
