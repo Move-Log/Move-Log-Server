@@ -8,7 +8,7 @@ import com.movelog.domain.news.dto.response.*;
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.exception.KeywordNotFoundException;
-import com.movelog.domain.record.repository.KeywordRepository;
+import com.movelog.domain.record.domain.repository.KeywordRepository;
 import com.movelog.domain.user.application.UserService;
 import com.movelog.domain.user.domain.User;
 import com.movelog.domain.user.domain.repository.UserRepository;

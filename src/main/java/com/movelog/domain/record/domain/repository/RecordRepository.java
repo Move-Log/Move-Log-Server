@@ -1,4 +1,4 @@
-package com.movelog.domain.record.repository;
+package com.movelog.domain.record.domain.repository;
 
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -31,4 +32,11 @@ public interface RecordRepository extends JpaRepository<Record,Long> {
     // 5개의 기록만 조회
     List<Record> findTop5ByKeywordUserAndRecordImageNotNullOrderByActionTimeDesc(User user);
 
+    @Query("SELECT COUNT(r) AS recordCount, DATE(r.actionTime) AS recordDate " +
+            "FROM Record r " +
+            "WHERE r.keyword.keywordId = :keywordId " +
+            "GROUP BY DATE(r.actionTime)")
+    List<Object[]> findKeywordRecordCountsByDate(Long keywordId);
+
+    Record findTopByKeywordKeywordIdOrderByActionTimeDesc(Long keywordId);
 }

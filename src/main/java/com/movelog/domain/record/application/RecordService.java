@@ -1,22 +1,18 @@
-package com.movelog.domain.record.service;
+package com.movelog.domain.record.application;
 
-import com.movelog.domain.news.domain.News;
-import com.movelog.domain.news.dto.response.NewsCalendarRes;
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
 import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.record.dto.request.CreateRecordReq;
-import com.movelog.domain.record.dto.request.SearchKeywordReq;
 import com.movelog.domain.record.dto.response.*;
-import com.movelog.domain.record.repository.KeywordRepository;
-import com.movelog.domain.record.repository.RecordRepository;
+import com.movelog.domain.record.domain.repository.KeywordRepository;
+import com.movelog.domain.record.domain.repository.RecordRepository;
 import com.movelog.domain.user.application.UserService;
 import com.movelog.domain.user.domain.User;
 import com.movelog.domain.user.domain.repository.UserRepository;
 import com.movelog.domain.user.exception.UserNotFoundException;
 import com.movelog.global.config.security.token.UserPrincipal;
 import com.movelog.global.util.S3Util;
-import jakarta.validation.ConstraintViolation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

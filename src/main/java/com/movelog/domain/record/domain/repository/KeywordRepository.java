@@ -1,4 +1,4 @@
-package com.movelog.domain.record.repository;
+package com.movelog.domain.record.domain.repository;
 
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
@@ -20,4 +20,5 @@ public interface KeywordRepository extends JpaRepository<Keyword,Long> {
     Keyword findByUserAndKeywordAndVerbType(User user, String noun, VerbType verbType);
 
     List<Keyword> findAllByUserAndKeywordContaining(User user, String keyword);
+
 }
