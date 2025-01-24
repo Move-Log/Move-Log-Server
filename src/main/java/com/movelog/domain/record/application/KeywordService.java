@@ -4,6 +4,7 @@ import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
 import com.movelog.domain.record.domain.repository.RecordRepository;
 import com.movelog.domain.record.dto.response.MyKeywordStatsRes;
+import com.movelog.domain.record.dto.response.RecommendKeywordInStatsRes;
 import com.movelog.domain.record.dto.response.SearchKeywordInStatsRes;
 import com.movelog.domain.record.exception.KeywordNotFoundException;
 import com.movelog.domain.record.domain.repository.KeywordRepository;
@@ -56,6 +57,10 @@ public class KeywordService {
     public MyKeywordStatsRes getMyKeywordStatsRes(UserPrincipal userPrincipal, Long keywordId) {
         validUserById(userPrincipal);
         Keyword keyword = validKeywordById(keywordId);
+        // 사용자가 기록한 키워드가 아닐 시, 빈 배열 반환
+        if (!keyword.getUser().getId().equals(userPrincipal.getId())) {
+            return MyKeywordStatsRes.builder().build();
+        }
 
         return MyKeywordStatsRes.builder()
                 .noun(keyword.getKeyword())
@@ -124,9 +129,21 @@ public class KeywordService {
         return Math.round(value * 100) / 100.0;
     }
 
+    public List<RecommendKeywordInStatsRes> getRecommendKeywords(UserPrincipal userPrincipal) {
+        User user = validUserById(userPrincipal);
+        List<Keyword> keywords = keywordRepository.findTop5ByUserOrderByCreatedAtDesc(user);
+
+        return keywords.stream()
+                .map(keyword -> RecommendKeywordInStatsRes.builder()
+                        .keywordId(keyword.getKeywordId())
+                        .noun(keyword.getKeyword())
+                        .build())
+                .toList();
+    }
+
     private User validUserById(UserPrincipal userPrincipal) {
-        // Optional<User> userOptional = userService.findById(userPrincipal.getId());
-        Optional<User> userOptional = userRepository.findById(5L);
+        Optional<User> userOptional = userService.findById(userPrincipal.getId());
+        // Optional<User> userOptional = userRepository.findById(5L);
         if (userOptional.isEmpty()) { throw new UserNotFoundException(); }
         return userOptional.get();
     }
@@ -136,5 +153,6 @@ public class KeywordService {
         if(keywordOptional.isEmpty()) { throw new KeywordNotFoundException(); }
         return keywordOptional.get();
     }
+
 
 }
