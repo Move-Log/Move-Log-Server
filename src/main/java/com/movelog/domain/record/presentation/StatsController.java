@@ -1,6 +1,7 @@
 package com.movelog.domain.record.presentation;
 
 import com.movelog.domain.record.application.KeywordService;
+import com.movelog.domain.record.dto.response.AllUserKeywordStatsRes;
 import com.movelog.domain.record.dto.response.MyKeywordStatsRes;
 import com.movelog.domain.record.dto.response.RecommendKeywordInStatsRes;
 import com.movelog.domain.record.dto.response.SearchKeywordInStatsRes;
@@ -80,6 +81,24 @@ public class StatsController {
         List<RecommendKeywordInStatsRes> response = keywordService.getRecommendKeywords(userPrincipal);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "전체 사용자 대상 특정 단어 통계 조회 API", description = "전체 사용자 데이터를 대상으로 특정 단어 통계를 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "전체 사용자 대상 특정 단어 통계 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AllUserKeywordStatsRes.class))),
+            @ApiResponse(responseCode = "400", description = "전체 사용자 대상 특정 단어 통계 조회 실패",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/word/all")
+    public ResponseEntity<?> getAllUserKeywordStats(
+        @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
+        @Parameter(description = "검색할 명사를 입력해주세요.", required = true) @RequestParam String keyword
+        ) {
+        AllUserKeywordStatsRes response = keywordService.getAllUserKeywordStats(userPrincipal, keyword);
+        return ResponseEntity.ok(response);
+    }
+
 
 
 }
