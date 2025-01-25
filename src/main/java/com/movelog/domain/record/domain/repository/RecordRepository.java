@@ -39,4 +39,18 @@ public interface RecordRepository extends JpaRepository<Record,Long> {
     List<Object[]> findKeywordRecordCountsByDate(Long keywordId);
 
     Record findTopByKeywordKeywordIdOrderByActionTimeDesc(Long keywordId);
+
+    @Query("SELECT r FROM Record r " +
+            "JOIN r.keyword k " +
+            "WHERE k.keyword = :keyword " +
+            "ORDER BY r.actionTime DESC")
+    List<Record> findAllByKeyword(String keyword);
+
+    @Query("SELECT DATE(r.actionTime), COUNT(r) " +
+            "FROM Record r " +
+            "JOIN r.keyword k " +
+            "WHERE k.keyword = :keyword " +
+            "GROUP BY DATE(r.actionTime)")
+    List<Object[]> findRecordCountsByKeywordGroupedByDate(String keyword);
+
 }
