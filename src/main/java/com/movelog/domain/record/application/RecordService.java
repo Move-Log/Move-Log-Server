@@ -47,8 +47,14 @@ public class RecordService {
         // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
         validateCreateRecordReq(createRecordReq);
 
-        String recordImgUrl = s3Util.uploadToRecordFolder(img);
-        log.info("recordImgUrl: {}", recordImgUrl);
+        String recordImgUrl;
+        if(img != null){
+            recordImgUrl = s3Util.uploadToRecordFolder(img);
+            log.info("recordImgUrl: {}", recordImgUrl);
+        }
+        else{
+            recordImgUrl = null;
+        }
 
         String verb = createRecordReq.getVerbType();
         try {
