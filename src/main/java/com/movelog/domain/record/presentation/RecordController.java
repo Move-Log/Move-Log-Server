@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +26,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/record")
 @RequiredArgsConstructor
+@Slf4j
 public class RecordController {
     private final RecordService recordService;
     @Operation(summary = "기록 추가 API", description = "기록을 추가하는 API입니다.")
@@ -42,6 +44,11 @@ public class RecordController {
             @Parameter(description = "Schemas의 CreateRecordReq를 참고해주세요.", required = true) @RequestPart CreateRecordReq createRecordReq,
             @RequestPart(value = "img", required = false) MultipartFile img
     ) {
+        // 이미지 null 체크
+        log.info("img: {}", img.isEmpty());
+        if(img.isEmpty()) {
+            img = null;
+        }
         recordService.createRecord(userPrincipal, createRecordReq, img);
         return ResponseEntity.ok(ApiResponseUtil.success(Message.builder().message("기록이 생성되었습니다.").build()));
     }
