@@ -19,7 +19,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
             "JOIN n.keyword k " +
             "WHERE k.user = :user " +
             "AND n.createdAt > :createdAt " +
-            "ORDER BY n.createdAt ASC")
+            "ORDER BY n.createdAt DESC")
     Page<News> findRecentNewsByUser(
             @Param("user") User user,
             @Param("createdAt") LocalDateTime createdAt,
