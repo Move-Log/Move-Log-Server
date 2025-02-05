@@ -112,6 +112,9 @@ public class StatsController {
     })
     @GetMapping("/record/all")
     public ResponseEntity<?> getAllUserRecordStats(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true)
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+
             @Parameter(description = "카테고리를 입력해주세요. (했어요, 갔어요, 먹었어요)", required = true)
             @RequestParam String category,
 
@@ -122,7 +125,7 @@ public class StatsController {
             @RequestParam(required = false) String month
     ) {
         // Redis에서 통계 데이터 조회 (월별 조회 처리 추가)
-        AllUserRecordStatsRes response = recordService.getAllUserRecordStats(category, period, month);
+        AllUserRecordStatsRes response = recordService.getAllUserRecordStats(userPrincipal, category, period, month);
         return ResponseEntity.ok(response);
     }
 

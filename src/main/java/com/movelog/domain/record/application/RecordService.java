@@ -213,7 +213,8 @@ public class RecordService {
     /**
      * 전체 사용자 기록 통계 조회 (월별 조회 및 일간 조회 개선)
      */
-    public AllUserRecordStatsRes getAllUserRecordStats(String category, String period, String month) {
+    public AllUserRecordStatsRes getAllUserRecordStats(UserPrincipal userPrincipal, String category, String period, String month) {
+        validUserById(userPrincipal);
         String redisKey = getRedisKey(period);
 
         // 총 기록 횟수 조회
@@ -448,7 +449,6 @@ public class RecordService {
 
         return dailyRecordCount;
     }
-
 
 
 
