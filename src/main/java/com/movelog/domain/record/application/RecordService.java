@@ -214,7 +214,7 @@ public class RecordService {
      * 전체 사용자 기록 통계 조회 (월별 조회 및 일간 조회 개선)
      */
     public AllUserRecordStatsRes getAllUserRecordStats(UserPrincipal userPrincipal, String category, String period, String month) {
-        validUserById(userPrincipal);
+        // validUserById(userPrincipal);
         String redisKey = getRedisKey(period);
 
         // 총 기록 횟수 조회
@@ -357,11 +357,43 @@ public class RecordService {
     /**
      * TOP 5 키워드 조회 (모든 데이터 가져온 후 서비스 단에서 필터링)
      */
+    /**
+     * TOP 5 키워드 조회 (모든 데이터 가져온 후 서비스 단에서 필터링)
+     */
     private List<Map<String, Object>> getTopRecords(String category) {
-        // 한글 문자열을 VerbType Enum으로 변환
         VerbType verbType = VerbType.fromValue(category);
+        String redisKey = "top_records_" + category;
 
-        // 모든 데이터 한 번에 조회
+        // Redis에서 지난번 순위 데이터를 가져옴 (타입 변환 처리)
+        Map<String, Integer> previousRankings = new HashMap<>();
+        Map<Object, Object> redisData = redisTemplate.opsForHash().entries(redisKey);
+
+        log.info("📥 Fetched Redis Data: {}", redisData);
+
+        for (Map.Entry<Object, Object> entry : redisData.entrySet()) {
+            try {
+                String key = entry.getKey().toString(); // Object → String 변환
+                Integer value = null;
+
+                if (entry.getValue() instanceof String) {
+                    value = Integer.parseInt((String) entry.getValue()); // String → Integer 변환
+                } else if (entry.getValue() instanceof Integer) {
+                    value = (Integer) entry.getValue();
+                } else {
+                    log.error("⚠️ Unexpected data type in Redis: key={}, value={}, type={}", key, entry.getValue(), entry.getValue().getClass());
+                }
+
+                if (value != null) {
+                    previousRankings.put(key, value);
+                }
+            } catch (Exception e) {
+                log.error("❌ Error parsing Redis data: key={}, value={}, error={}", entry.getKey(), entry.getValue(), e.getMessage());
+            }
+        }
+
+        log.info("📊 Parsed Previous Rankings: {}", previousRankings);
+
+        // 최신 TOP 5 키워드 가져오기
         List<Record> records = recordRepository.findAllWithKeyword();
         Map<String, Integer> keywordCounts = new HashMap<>();
 
@@ -372,17 +404,60 @@ public class RecordService {
             }
         }
 
-        return keywordCounts.entrySet().stream()
-                .sorted((a, b) -> b.getValue().compareTo(a.getValue())) // 내림차순 정렬
+        // 현재 순위 계산 (내림차순 정렬)
+        List<Map.Entry<String, Integer>> sortedEntries = keywordCounts.entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
                 .limit(5)
-                .map(entry -> {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("record", entry.getKey());
-                    map.put("count", entry.getValue());
-                    return map;
-                })
                 .collect(Collectors.toList());
+
+        // 현재 순위를 저장할 Map
+        Map<String, Integer> currentRankings = new LinkedHashMap<>();
+        int rank = 1;
+        for (Map.Entry<String, Integer> entry : sortedEntries) {
+            currentRankings.put(entry.getKey(), rank++);
+        }
+
+        // Redis에 현재 순위 저장 (다음 비교를 위해)
+        Map<String, String> redisSaveData = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : currentRankings.entrySet()) {
+            redisSaveData.put(entry.getKey(), String.valueOf(entry.getValue())); // 🚀 Integer → String 변환 후 저장
+        }
+        redisTemplate.opsForHash().putAll(redisKey, redisSaveData);
+
+        log.info("📊 Saved Current Rankings to Redis: {}", currentRankings);
+
+        // 응답 데이터 생성
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : currentRankings.entrySet()) {
+            String keyword = entry.getKey();
+            int newRank = entry.getValue();
+            Integer oldRank = previousRankings.get(keyword); // 이전 순위 가져오기
+
+            // 순위 변화 계산
+            String trend;
+            if (oldRank == null) {
+                trend = "new"; // 새롭게 진입한 경우
+            } else if (newRank < oldRank) {
+                trend = "up"; // 순위 상승
+            } else if (newRank > oldRank) {
+                trend = "down"; // 순위 하락
+            } else {
+                trend = "same"; // 변화 없음
+            }
+
+            // 응답 데이터 구성
+            Map<String, Object> recordData = new HashMap<>();
+            recordData.put("rank", newRank);
+            recordData.put("keyword", keyword);
+            recordData.put("count", keywordCounts.get(keyword));
+            recordData.put("trend", trend);
+            result.add(recordData);
+        }
+
+        return result;
     }
+
+
 
 
     /**

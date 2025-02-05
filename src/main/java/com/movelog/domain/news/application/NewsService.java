@@ -158,7 +158,9 @@ public class NewsService {
 
     // User 정보 검증
     private User validateUser(UserPrincipal userPrincipal) {
-        Optional<User> userOptional = userService.findById(userPrincipal.getId());
+        // Optional<User> userOptional = userService.findById(userPrincipal.getId());
+        // 테스트용
+        Optional<User> userOptional = userRepository.findById(17L);
         if (userOptional.isEmpty()) { throw new UserNotFoundException(); }
         return userOptional.get();
     }
