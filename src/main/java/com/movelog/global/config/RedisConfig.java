@@ -9,7 +9,6 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
 @Configuration
 public class RedisConfig {
 
@@ -19,11 +18,15 @@ public class RedisConfig {
     @Value("${spring.redis.port}")
     private int port;
 
+    @Value("${spring.redis.password}")
+    private String password; // 비밀번호 추가
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(
-                host, port
-        ));
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        config.setPassword(password); // 비밀번호 설정
+
+        return new LettuceConnectionFactory(config);
     }
 
     @Bean
