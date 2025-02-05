@@ -214,7 +214,7 @@ public class RecordService {
      * 전체 사용자 기록 통계 조회 (월별 조회 및 일간 조회 개선)
      */
     public AllUserRecordStatsRes getAllUserRecordStats(UserPrincipal userPrincipal, String category, String period, String month) {
-        // validUserById(userPrincipal);
+        validUserById(userPrincipal);
         String redisKey = getRedisKey(period);
 
         // 총 기록 횟수 조회
@@ -353,10 +353,6 @@ public class RecordService {
         return records.size();
     }
 
-
-    /**
-     * TOP 5 키워드 조회 (모든 데이터 가져온 후 서비스 단에서 필터링)
-     */
     /**
      * TOP 5 키워드 조회 (모든 데이터 가져온 후 서비스 단에서 필터링)
      */
