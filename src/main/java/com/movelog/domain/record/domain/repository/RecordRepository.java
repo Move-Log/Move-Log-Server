@@ -2,6 +2,7 @@ package com.movelog.domain.record.domain.repository;
 
 import com.movelog.domain.record.domain.Keyword;
 import com.movelog.domain.record.domain.Record;
+import com.movelog.domain.record.domain.VerbType;
 import com.movelog.domain.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,4 +54,15 @@ public interface RecordRepository extends JpaRepository<Record,Long> {
             "GROUP BY DATE(r.actionTime)")
     List<Object[]> findRecordCountsByKeywordGroupedByDate(String keyword);
 
+    /**
+     * 모든 Record와 연관된 Keyword를 페치 조인하여 가져옴
+     */
+    @Query("SELECT r FROM Record r JOIN FETCH r.keyword k")
+    List<Record> findAllWithKeyword();
+
+    @Query("SELECT r FROM Record r WHERE r.keyword.verbType = :verbType " +
+            "AND r.actionTime BETWEEN :startDate AND :endDate")
+    List<Record> findRecordsByMonth(@Param("verbType") VerbType verbType,
+                                    @Param("startDate") LocalDateTime startDate,
+                                    @Param("endDate") LocalDateTime endDate);
 }
