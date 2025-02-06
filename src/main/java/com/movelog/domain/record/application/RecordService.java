@@ -370,7 +370,7 @@ public class RecordService {
         Map<String, Integer> previousRankings = new HashMap<>();
         Map<Object, Object> redisData = redisTemplate.opsForHash().entries(redisKey);
 
-        log.info("📥 Fetched Redis Data: {}", redisData);
+        log.info("Fetched Redis Data: {}", redisData);
 
         for (Map.Entry<Object, Object> entry : redisData.entrySet()) {
             try {
@@ -382,18 +382,18 @@ public class RecordService {
                 } else if (entry.getValue() instanceof Integer) {
                     value = (Integer) entry.getValue();
                 } else {
-                    log.error("⚠️ Unexpected data type in Redis: key={}, value={}, type={}", key, entry.getValue(), entry.getValue().getClass());
+                    log.error("Unexpected data type in Redis: key={}, value={}, type={}", key, entry.getValue(), entry.getValue().getClass());
                 }
 
                 if (value != null) {
                     previousRankings.put(key, value);
                 }
             } catch (Exception e) {
-                log.error("❌ Error parsing Redis data: key={}, value={}, error={}", entry.getKey(), entry.getValue(), e.getMessage());
+                log.error("Error parsing Redis data: key={}, value={}, error={}", entry.getKey(), entry.getValue(), e.getMessage());
             }
         }
 
-        log.info("📊 Parsed Previous Rankings: {}", previousRankings);
+        log.info("Parsed Previous Rankings: {}", previousRankings);
 
         // 최신 TOP 5 키워드 가져오기
         List<Record> records = recordRepository.findAllWithKeyword();
@@ -459,9 +459,6 @@ public class RecordService {
         return result;
     }
 
-
-
-
     /**
      * 날짜별 기록 개수 조회 (평균 일간 기록 정보 조회를 위함)
      */
@@ -495,14 +492,14 @@ public class RecordService {
         // month 값 정리: 공백 제거 + 숫자와 '-'만 유지
         month = month.trim().replaceAll("[^0-9-]", "");
 
-        // 🕒 월 시작일 & 종료일 설정
+        // 월 시작일 & 종료일 설정
         YearMonth yearMonth = YearMonth.parse(month, DateTimeFormatter.ofPattern("yyyy-MM"));
         LocalDateTime startDate = yearMonth.atDay(1).atStartOfDay(); // ex) 2025-02-01 00:00:00
         LocalDateTime endDate = yearMonth.atEndOfMonth().atTime(23, 59, 59); // ex) 2025-02-28 23:59:59
 
         log.info("🔍 Fetching records for category: [{}] between [{}] and [{}]", category, startDate, endDate);
 
-        // 📌 DB에서 해당 월의 데이터만 필터링하여 조회
+        // DB에서 해당 월의 데이터만 필터링하여 조회
         List<Record> records = recordRepository.findRecordsByMonth(verbType, startDate, endDate);
         log.info("📊 Retrieved {} records from DB", records.size());
 
@@ -511,18 +508,18 @@ public class RecordService {
             return dailyRecordCount;
         }
 
-        // 📅 날짜별 개수 카운트 (타임존 변환 추가)
+        // 날짜별 개수 카운트 (타임존 변환 추가)
         for (Record record : records) {
             log.info("⏳ Raw ActionTime: {}", record.getActionTime());
             ZonedDateTime zonedDateTime = record.getActionTime().atZone(ZoneId.of("UTC"))
                     .withZoneSameInstant(ZoneId.of("Asia/Seoul"));
             LocalDate date = zonedDateTime.toLocalDate();
-            log.info("📅 Converted LocalDate: {}", date);
+            log.info("Converted LocalDate: {}", date);
 
             dailyRecordCount.put(date, dailyRecordCount.getOrDefault(date, 0) + 1);
         }
 
-        log.info("✅ Final Monthly Records: {}", dailyRecordCount);
+        log.info("Final Monthly Records: {}", dailyRecordCount);
 
         return dailyRecordCount;
     }

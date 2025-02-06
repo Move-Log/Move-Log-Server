@@ -119,25 +119,10 @@ public class NewsService {
                 .mapToLong(newsRepository::countByKeyword)
                 .sum();
 
-        long newsStatus = totalNewsCount % 5;
-        LocalDateTime today = LocalDateTime.now();
-
-        // 오늘 생성한 뉴스가 있으면 true, 없으면 false
-        boolean isTodayNews = !newsRepository.findRecentNewsByUser(user, today, PageRequest.of(0, 1)).isEmpty();
-
-        int result;
-        if(newsStatus == 0 && isTodayNews) {
-            result = 5;
-        }
-        else if(newsStatus == 0) {
-            result = 0;
-        }
-        else {
-            result = (int) newsStatus;
-        }
+        long newsStatus = totalNewsCount % 6;
 
         return TodayNewsStatusRes.builder()
-                .newsStatus(result)
+                .newsStatus((int) newsStatus)
                 .build();
     }
 
