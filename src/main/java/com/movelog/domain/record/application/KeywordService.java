@@ -247,8 +247,8 @@ public class KeywordService {
 
 
     private User validUserById(UserPrincipal userPrincipal) {
-        // Optional<User> userOptional = userService.findById(userPrincipal.getId());
-        Optional<User> userOptional = userRepository.findById(17L);
+        Optional<User> userOptional = userService.findById(userPrincipal.getId());
+        // Optional<User> userOptional = userRepository.findById(17L);
         if (userOptional.isEmpty()) { throw new UserNotFoundException(); }
         return userOptional.get();
     }
