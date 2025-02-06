@@ -149,7 +149,7 @@ public class NewsService {
         LocalDateTime end = LocalDateTime.parse(date + "T23:59:59");
 
         // page 적용 및 정렬 추가
-        Pageable pageable = PageRequest.of(page, 15, Sort.by(Sort.Direction.ASC, "actionTime"));
+        Pageable pageable = PageRequest.of(page, 15);
 
         Page<News> newsList = newsRepository.findNewsByUserAndCreatedAtBetween(user, start, end, pageable);
 
