@@ -35,41 +35,77 @@ public class KeywordService {
     private final RecordRepository recordRepository;
 
     public List<SearchKeywordInStatsRes> searchKeywordInStats(UserPrincipal userPrincipal, String keyword) {
-
         validUserById(userPrincipal);
 
         // 검색어를 포함한 키워드 리스트 조회
-        List<Keyword> keywords = keywordRepository.findAllKeywordStartingWith(keyword);
+        List<Object[]> results = keywordRepository.findAllKeywordStartingWith(keyword);
         log.info("Searching for keywords starting with: {}", keyword);
 
-        // 기록이 많은 순서대로 정렬
-        keywords = sortKeywordByRecordCount(keywords);
-
-        return keywords.stream()
-                .map(keyword1 -> SearchKeywordInStatsRes.builder()
-                        .keywordId(keyword1.getKeywordId())
-                        .noun(keyword1.getKeyword())
+        return results.stream()
+                .map(result -> SearchKeywordInStatsRes.builder()
+                        .keywordId((Long) result[0])  // 대표 keywordId (MIN 값)
+                        .noun((String) result[1])     // 명사
                         .build())
                 .toList();
-
     }
 
     // 사용자 개인의 특정 키워드 통계 조회
     public MyKeywordStatsRes getMyKeywordStatsRes(UserPrincipal userPrincipal, Long keywordId) {
-        validUserById(userPrincipal);
+        User user = validUserById(userPrincipal);
+
+        // keywordId를 기반으로 keyword(명사) 조회
         Keyword keyword = validKeywordById(keywordId);
-        // 사용자가 기록한 키워드가 아닐 시, 빈 배열 반환
-        if (!keyword.getUser().getId().equals(userPrincipal.getId())) {
+        String noun = keyword.getKeyword(); // 명사 추출
+
+        // 사용자가 기록한 것 중 동일한 keyword(명사)를 가진 것만 조회
+        List<Keyword> userKeywords = keywordRepository.findByUserIdAndKeyword(user.getId(), noun);
+
+        // 만약 사용자가 기록한 적 없는 단어라면 빈 응답 반환
+        if (userKeywords.isEmpty()) {
             return MyKeywordStatsRes.builder().build();
         }
 
+        // 해당 keyword(명사)를 사용한 모든 기록 ID를 가져옴
+        List<Long> keywordIds = userKeywords.stream()
+                .map(Keyword::getKeywordId)
+                .toList();
+
+        // 해당 키워드 ID 목록을 기반으로 통계 조회
         return MyKeywordStatsRes.builder()
-                .noun(keyword.getKeyword())
-                .count(keywordRecordCountByKeywordId(keywordId))
-                .lastRecordedAt(getLastRecordedAtByKeywordId(keywordId))
-                .avgDailyRecord(calculateAverageDailyRecordsByKeywordId(keywordId))
-                .avgWeeklyRecord(getAvgWeeklyRecordByKeywordId(keywordId))
+                .noun(noun)
+                .count(keywordRecordCountByKeywordIds(keywordIds))  // 여러 개의 keywordId를 기반으로 카운트
+                .lastRecordedAt(getLastRecordedAtByKeywordIds(keywordIds))  // 여러 개의 keywordId 중 최신 기록 조회
+                .avgDailyRecord(calculateAverageDailyRecordsByKeywordIds(keywordIds))  // 평균 일간 기록
+                .avgWeeklyRecord(getAvgWeeklyRecordByKeywordIds(keywordIds))  // 평균 주간 기록
                 .build();
+    }
+
+    // 키워드 내 기록 개수를 반환 (다중 keywordId 지원)
+    private int keywordRecordCountByKeywordIds(List<Long> keywordIds) {
+        return keywordRepository.countByKeywordIds(keywordIds);
+    }
+
+    // 키워드 내 마지막 기록 시간을 반환 (다중 keywordId 지원)
+    private LocalDateTime getLastRecordedAtByKeywordIds(List<Long> keywordIds) {
+        return keywordRepository.findLastRecordedAtByKeywordIds(keywordIds).orElse(null);
+    }
+
+    // 키워드의 일일 평균 기록 수를 반환 (다중 keywordId 지원)
+    public double calculateAverageDailyRecordsByKeywordIds(List<Long> keywordIds) {
+        List<Object[]> results = keywordRepository.calculateAvgDailyRecordsByKeywordIds(keywordIds);
+
+        long totalRecords = results.stream().mapToLong(row -> (Long) row[0]).sum();
+        long days = results.size();
+
+        return days == 0 ? 0 : roundToTwoDecimal((double) totalRecords / days);
+    }
+
+    // 키워드의 최근 7일간 평균 기록 수 반환 (다중 keywordId 지원)
+    public double getAvgWeeklyRecordByKeywordIds(List<Long> keywordIds) {
+        LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
+        long totalRecords = keywordRepository.calculateAvgWeeklyRecordsByKeywordIds(keywordIds, weekAgo);
+
+        return roundToTwoDecimal((double) totalRecords / 7);
     }
 
 
@@ -124,6 +160,7 @@ public class KeywordService {
         return roundToTwoDecimal(result);
 
     }
+
 
     // 소수점 둘째 자리에서 반올림하여 반환
     private double roundToTwoDecimal(double value) {
@@ -211,7 +248,7 @@ public class KeywordService {
 
     private User validUserById(UserPrincipal userPrincipal) {
         Optional<User> userOptional = userService.findById(userPrincipal.getId());
-        // Optional<User> userOptional = userRepository.findById(5L);
+        // Optional<User> userOptional = userRepository.findById(17L);
         if (userOptional.isEmpty()) { throw new UserNotFoundException(); }
         return userOptional.get();
     }
