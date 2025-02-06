@@ -53,8 +53,8 @@ public class RecordService {
 
     @Transactional
     public void createRecord(UserPrincipal userPrincipal, CreateRecordReq createRecordReq, MultipartFile img) {
-        // User user = validUserById(userPrincipal);
-        User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
+        User user = validUserById(userPrincipal);
+        // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
         validateCreateRecordReq(createRecordReq);
 
         String recordImgUrl;
