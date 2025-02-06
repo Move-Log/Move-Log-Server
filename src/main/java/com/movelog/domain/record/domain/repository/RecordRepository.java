@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RecordRepository extends JpaRepository<Record,Long> {
@@ -65,4 +66,5 @@ public interface RecordRepository extends JpaRepository<Record,Long> {
     List<Record> findRecordsByMonth(@Param("verbType") VerbType verbType,
                                     @Param("startDate") LocalDateTime startDate,
                                     @Param("endDate") LocalDateTime endDate);
+
 }
