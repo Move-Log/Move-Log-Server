@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -88,8 +89,11 @@ public class NewsService {
         User user = validateUser(userPrincipal);
         // User user = userRepository.findById(5L).orElseThrow(UserNotFoundException::new);
 
-        //페이징 객체 생성
-        Pageable pageable = PageRequest.of(page, 15);
+        // page가 null이거나 음수일 경우 기본값 0으로 설정
+        int pageNumber = (page == null || page < 0) ? 0 : page;
+
+        // page 적용 및 정렬 추가
+        Pageable pageable = PageRequest.of(pageNumber, 15, Sort.by(Sort.Direction.ASC, "actionTime"));
 
         // 최근 일주일간 생성한 뉴스 목록 조회
         LocalDateTime createdAt = LocalDateTime.now().minusDays(7);
@@ -144,7 +148,9 @@ public class NewsService {
         LocalDateTime start = LocalDateTime.parse(date + "T00:00:00");
         LocalDateTime end = LocalDateTime.parse(date + "T23:59:59");
 
-        Pageable pageable = PageRequest.of(0, 15); // 원하는 페이지와 크기를 지정
+        // page 적용 및 정렬 추가
+        Pageable pageable = PageRequest.of(page, 15, Sort.by(Sort.Direction.ASC, "actionTime"));
+
         Page<News> newsList = newsRepository.findNewsByUserAndCreatedAtBetween(user, start, end, pageable);
 
         return newsList.map(news -> NewsCalendarRes.builder()
@@ -158,9 +164,9 @@ public class NewsService {
 
     // User 정보 검증
     private User validateUser(UserPrincipal userPrincipal) {
-        // Optional<User> userOptional = userService.findById(userPrincipal.getId());
+        Optional<User> userOptional = userService.findById(userPrincipal.getId());
         // 테스트용
-        Optional<User> userOptional = userRepository.findById(17L);
+        // Optional<User> userOptional = userRepository.findById(17L);
         if (userOptional.isEmpty()) { throw new UserNotFoundException(); }
         return userOptional.get();
     }

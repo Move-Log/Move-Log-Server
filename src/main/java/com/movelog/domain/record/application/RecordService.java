@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -184,7 +185,12 @@ public class RecordService {
         LocalDateTime start = LocalDateTime.parse(date + "T00:00:00");
         LocalDateTime end = LocalDateTime.parse(date + "T23:59:59");
 
-        Pageable pageable = PageRequest.of(0, 15); // 원하는 페이지와 크기를 지정
+        // page가 null이거나 음수일 경우 기본값 0으로 설정
+        int pageNumber = (page == null || page < 0) ? 0 : page;
+
+        // page 적용 및 정렬 추가
+        Pageable pageable = PageRequest.of(pageNumber, 15, Sort.by(Sort.Direction.ASC, "actionTime"));
+
         Page<Record> recordList = recordRepository.findRecordByUserAndCreatedAtBetween(user, start, end, pageable);
 
         return recordList.map(record -> RecordCalendarRes.builder()
