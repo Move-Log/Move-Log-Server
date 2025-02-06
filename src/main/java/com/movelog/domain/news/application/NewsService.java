@@ -93,7 +93,7 @@ public class NewsService {
         int pageNumber = (page == null || page < 0) ? 0 : page;
 
         // page 적용 및 정렬 추가
-        Pageable pageable = PageRequest.of(pageNumber, 15, Sort.by(Sort.Direction.ASC, "actionTime"));
+        Pageable pageable = PageRequest.of(pageNumber, 15);
 
         // 최근 일주일간 생성한 뉴스 목록 조회
         LocalDateTime createdAt = LocalDateTime.now().minusDays(7);
