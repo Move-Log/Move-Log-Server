@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.text.Collator;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -524,6 +525,44 @@ public class RecordService {
         return dailyRecordCount;
     }
 
+    // 오랜만에 한 행동
+    // 동사-명사 쌍에 대한 최근 기록 일시 - 바로 이전 기록 일시 차이 일수
+    public int calculateAfterLongOptionCount(Long userId, String verb, String noun) {
+        VerbType verbType = VerbType.fromValue(verb);
+
+        List<LocalDateTime> recordTimes = recordRepository.findLatestTwoRecords(userId, noun, verbType);
+
+        if (recordTimes.size() < 2) {
+            return 0; // 이전 기록이 없으면 비교 불가
+        }
+
+        return (int) ChronoUnit.DAYS.between(recordTimes.get(1), recordTimes.get(0));
+    }
+
+
+    // 끊은 습관
+    // 가장 최근 기록 일시와 - 바로 이전 기록 일시 차이 일수
+    public int calculateBreakingHabitOptionCount(Long userId, String verb, String noun) {
+        VerbType verbType = VerbType.fromValue(verb);
+
+        Optional<LocalDateTime> lastRecordTime = recordRepository.findLastRecordedAt(userId, noun, verbType);
+
+        if (lastRecordTime.isEmpty()) {
+            return 0; // 이전 기록이 없으면 0
+        }
+
+        return (int) ChronoUnit.DAYS.between(lastRecordTime.get(), LocalDateTime.now());
+    }
+
+    // 연속 기록
+    // 동사-명사 쌍에 대한 최근 연속 기록 일수
+    public int calculateStreakRecordOptionCount(Long userId, String verb, String noun) {
+        VerbType verbType = VerbType.fromValue(verb);
+        String verbTypeStr = verbType.getVerbType();
+
+        return recordRepository.findMaxStreakDays(userId, noun, verbTypeStr);
+    }
+
 
 
     private User validUserById(UserPrincipal userPrincipal) {
@@ -549,6 +588,7 @@ public class RecordService {
             throw new IllegalArgumentException("noun is required.");
         }
     }
+
 
 
 }

@@ -67,4 +67,44 @@ public interface RecordRepository extends JpaRepository<Record,Long> {
                                     @Param("startDate") LocalDateTime startDate,
                                     @Param("endDate") LocalDateTime endDate);
 
+
+    @Query("""
+    SELECT r.actionTime
+    FROM Record r
+    WHERE r.keyword.keyword = :noun AND r.keyword.verbType = :verbType AND r.keyword.user.id = :userId
+    ORDER BY r.actionTime DESC
+    LIMIT 2
+    """)
+    List<LocalDateTime> findLatestTwoRecords(@Param("userId") Long userId, @Param("noun") String noun, @Param("verbType") VerbType verbType);
+
+
+    @Query("""
+    SELECT r.actionTime
+    FROM Record r
+    WHERE r.keyword.keyword = :noun AND r.keyword.verbType = :verbType AND r.keyword.user.id = :userId
+    ORDER BY r.actionTime DESC
+    LIMIT 1
+    """)
+    Optional<LocalDateTime> findLastRecordedAt(@Param("userId") Long userId, @Param("noun") String noun, @Param("verbType") VerbType verbType);
+
+    @Query(value = """
+    WITH StreakData AS (
+        SELECT 
+            DATE(action_time) AS record_date,
+            DATE_SUB(DATE(action_time), INTERVAL ROW_NUMBER() OVER (ORDER BY action_time) DAY) AS streak_group
+        FROM record
+        WHERE keyword_id IN (
+            SELECT k.keyword_id 
+            FROM keyword k
+            WHERE k.keyword = :noun 
+            AND k.verb_type = :verbType
+            AND k.user_id = :userId
+        )
+    )
+    SELECT COUNT(*)
+    FROM (SELECT DISTINCT record_date FROM StreakData GROUP BY streak_group) AS StreakGroups
+    """, nativeQuery = true)
+    int findMaxStreakDays(@Param("userId") Long userId, @Param("noun") String noun, @Param("verbType") String verbType);
+
+
 }
