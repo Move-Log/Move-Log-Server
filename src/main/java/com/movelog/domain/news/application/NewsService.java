@@ -48,7 +48,7 @@ public class NewsService {
         String verb = VerbType.getStringVerbType(keyword.getVerbType());
         String noun = keyword.getKeyword();
 
-        return headLineGeneratorService.generateHeadLine(option, verb, noun);
+        return headLineGeneratorService.generateHeadLine(user.getId(), option, verb, noun);
     }
 
     @Transactional
