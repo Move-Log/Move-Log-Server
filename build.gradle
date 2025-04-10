@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'application'
 }
 
 group = 'com'
@@ -46,8 +47,9 @@ dependencies {
     implementation 'com.auth0:jwks-rsa:0.20.0'
 
 
-    // DB (MySQL)
+    // DB (MySQL, H2)
     runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'com.h2database:h2'
 
     // OPENAPI
     dependencies {
@@ -95,3 +97,8 @@ dependencyManagement {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.4"
     }
 }
+
+application {
+    mainClass = 'com.movelog.practice.SimpleHttpServer'
+}
+
