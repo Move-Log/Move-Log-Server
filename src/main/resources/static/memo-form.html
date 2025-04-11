@@ -2,15 +2,52 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>메모 작성</title>
+    <title>효진이에게</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 100px;
+            background-color: #fef4e8;
+        }
+
+        button {
+            font-size: 5em;
+            padding: 25px 50px;
+            border: none;
+            border-radius: 15px;
+            background-color: #ff7f50;
+            color: white;
+            cursor: pointer;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #ff6347;
+            transform: scale(1.05);
+        }
+
+        #message {
+            display: none;
+            margin-top: 60px;
+            font-size: 3em;
+            color: #cc3300;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-<h1>메모 작성</h1>
-<form action="/memo" method="POST">
-    <label>메모 내용: <input type="text" name="memo" required></label><br>
-    <button type="submit">저장</button>
-</form>
-<br>
-<a href="/memo">메모 목록 보기</a>
+
+<button onclick="showMessage()">효진이에게</button>
+
+<div id="message">쌀국수 먹자</div>
+
+<script>
+    function showMessage() {
+        document.getElementById("message").style.display = "block";
+    }
+</script>
+
 </body>
 </html>
