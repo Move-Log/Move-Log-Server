@@ -34,7 +34,7 @@ public class MoveLogApplication {
         SpringApplication.run(MoveLogApplication.class, args);
     }
 
-    @PostConstruct
+    // @PostConstruct
     public void init() {
         log.info("Redis data migration start!");
         dataMigrationService.migrateDataToRedis();

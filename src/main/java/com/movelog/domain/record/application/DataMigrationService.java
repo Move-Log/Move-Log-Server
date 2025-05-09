@@ -29,7 +29,7 @@ public class DataMigrationService {
     /**
      * 애플리케이션 실행 시 기존 데이터를 Redis로 마이그레이션
      */
-    @PostConstruct
+    // @PostConstruct
     @Transactional
     public void migrateDataToRedis() {
         log.info("🔄 Redis 데이터 마이그레이션 시작...");
