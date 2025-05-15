@@ -123,4 +123,18 @@ public class GlobalExceptionHandler {
         ApiResponse apiResult = ApiResponse.builder().check(false).information(response).build();
         return new ResponseEntity<>(apiResult, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    protected ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException e) {
+        ErrorResponse response = ErrorResponse
+                .builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(e.getMessage())
+                .build();
+
+        ApiResponse apiResult = ApiResponse.builder().check(false).information(response).build();
+        return new ResponseEntity<>(apiResult, HttpStatus.BAD_REQUEST);
+    }
+
 }

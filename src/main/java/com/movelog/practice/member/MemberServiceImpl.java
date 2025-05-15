@@ -16,6 +16,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void register(String name) {
         log.info("회원 등록 로직 실행: {}" , name);
+        // 회원 등록 로직
         if ("error".equals(name)) {
             throw new IllegalArgumentException("잘못된 이름입니다");
         }

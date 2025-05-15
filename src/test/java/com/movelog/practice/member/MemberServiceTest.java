@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class MemberServiceTest {
 
     @Test
-    @Nested
     @DisplayName("[성공] 회원가입 테스트")
     void testWithProxy() {
         MemberService target = new MemberServiceImpl();

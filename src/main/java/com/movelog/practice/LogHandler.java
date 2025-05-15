@@ -14,13 +14,14 @@ import java.lang.reflect.Method;
  * - 모든 메서드 실행 전/후 로깅 처리
  */
 
-
+// @SpringBootTest나 컨트롤러 테스트에서는 자동으로 적용되지 않음
+// JDK 동적 프록시 방식이기 때문에
 public class LogHandler implements InvocationHandler {
 
     private static final Logger log = LoggerFactory.getLogger(LogHandler.class); // SLF4J Logger
 
     private final Object target;
-    private final TransactionManager txManager = new TransactionManager();
+    private final TransactionHandler txManager = new TransactionHandler();
 
     public LogHandler(Object target) {
         this.target = target;
@@ -31,11 +32,11 @@ public class LogHandler implements InvocationHandler {
         String methodName = method.getName();
 
         logBefore(methodName);       // [1] 메서드 시작 로그
-        txManager.begin();           // [2] 트랜잭션 시작
+        txManager.beginTransaction();           // [2] 트랜잭션 시작
 
         try {
             Object result = method.invoke(target, args); // [3] 실제 비즈니스 로직 실행
-            txManager.commit();       // [4] 성공 시 커밋
+            txManager.commitTransaction();       // [4] 성공 시 커밋
             logAfter(methodName);     // [5] 성공 로그 출력
             return result;
 
@@ -60,14 +61,14 @@ public class LogHandler implements InvocationHandler {
     // [6] 비즈니스 로직에서 발생한 예외 처리
     private Object handleTargetException(String methodName, InvocationTargetException e) throws Throwable {
         Throwable targetEx = e.getTargetException();
-        txManager.rollback();
+        txManager.rollbackTransaction();
         log.error("[AOP] 예외 발생: {} | 메시지: {}", methodName, targetEx.getMessage(), targetEx);
         throw targetEx;
     }
 
     // [7] 예기치 못한 예외 처리 (ex. method.invoke 자체 실패)
     private Object handleUnexpectedException(String methodName, Exception e) throws Throwable {
-        txManager.rollback();
+        txManager.rollbackTransaction();
         log.error("[AOP] 예외 처리 실패: {} | 메시지: {}", methodName, e.getMessage(), e);
         throw e;
     }
